@@ -10,6 +10,7 @@ abstract class Exercise with _$Exercise {
     required String name,
     required String category,
     @JsonKey(name: 'muscle_group') required String muscleGroup,
+    @Default([]) List<String> muscles,
     @JsonKey(name: 'is_custom') required bool isCustom,
     @JsonKey(name: 'created_by') String? createdBy,
   }) = _Exercise;

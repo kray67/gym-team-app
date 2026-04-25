@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gym_team/features/workout/providers/custom_exercises_notifier.dart';
-import 'package:gym_team/features/workout/providers/exercises_provider.dart';
 import 'package:gym_team/shared/models/exercise.dart';
 
-const _customCategoryOption = '__custom__';
+const _muscleOptions = [
+  'Arms', 'Back', 'Chest', 'Core', 'Full-Body',
+  'Glutes', 'Legs', 'Olympic', 'Other', 'Shoulders',
+];
+
+const _equipmentOptions = [
+  'Barbell', 'Bodyweight', 'Cable', 'Cardio',
+  'Dumbbell', 'Kettlebell', 'Machine', 'Safety Bar', 'Smith Machine',
+];
 
 /// Shows a bottom sheet to create or edit a custom exercise.
 /// Returns true if the exercise was saved, false/null if cancelled.
@@ -34,48 +41,26 @@ class _ExerciseFormSheet extends ConsumerStatefulWidget {
 class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
   final _formKey = GlobalKey<FormState>();
   late final _nameCtrl = TextEditingController(text: widget.initial?.name);
-  late final _muscleCtrl =
-      TextEditingController(text: widget.initial?.muscleGroup);
-  final _customCategoryCtrl = TextEditingController();
-
-  // The dropdown value — either a catalog category name or _customCategoryOption
-  String? _dropdownValue;
-  bool _isCustomCategory = false;
   bool _loading = false;
+
+  String? _selectedMuscle;
+  String? _selectedEquipment;
 
   @override
   void initState() {
     super.initState();
-    final initial = widget.initial?.category;
-    if (initial != null) {
-      _dropdownValue = initial; // may be overridden below if not in catalog
-    }
+    _selectedMuscle = _muscleOptions.contains(widget.initial?.muscleGroup)
+        ? widget.initial!.muscleGroup
+        : null;
+    _selectedEquipment = _equipmentOptions.contains(widget.initial?.category)
+        ? widget.initial!.category
+        : null;
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _muscleCtrl.dispose();
-    _customCategoryCtrl.dispose();
     super.dispose();
-  }
-
-  List<String> _catalogCategories(List<Exercise> all) {
-    return all
-        .where((e) => !e.isCustom)
-        .map((e) => e.category)
-        .toSet()
-        .toList()
-      ..sort();
-  }
-
-  /// Resolves the final category string to save.
-  String? get _resolvedCategory {
-    if (_isCustomCategory) {
-      final v = _customCategoryCtrl.text.trim();
-      return v.isEmpty ? null : v;
-    }
-    return _dropdownValue == _customCategoryOption ? null : _dropdownValue;
   }
 
   Future<void> _submit() async {
@@ -83,19 +68,18 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
     setState(() => _loading = true);
     try {
       final notifier = ref.read(customExercisesNotifierProvider.notifier);
-      final category = _resolvedCategory!;
       if (widget.initial == null) {
         await notifier.create(
           name: _nameCtrl.text.trim(),
-          category: category,
-          muscleGroup: _muscleCtrl.text.trim(),
+          category: _selectedEquipment!,
+          muscleGroup: _selectedMuscle!,
         );
       } else {
         await notifier.updateExercise(
           id: widget.initial!.id,
           name: _nameCtrl.text.trim(),
-          category: category,
-          muscleGroup: _muscleCtrl.text.trim(),
+          category: _selectedEquipment!,
+          muscleGroup: _selectedMuscle!,
         );
       }
       if (mounted) Navigator.of(context).pop(true);
@@ -112,32 +96,6 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final allExercises = ref.watch(exercisesProvider).valueOrNull ?? [];
-    final catalogCategories = _catalogCategories(allExercises);
-
-    // If editing and the initial category is not in the catalog, pre-select custom
-    if (widget.initial != null &&
-        !_isCustomCategory &&
-        _dropdownValue != null &&
-        !catalogCategories.contains(_dropdownValue) &&
-        _dropdownValue != _customCategoryOption) {
-      _isCustomCategory = true;
-      _customCategoryCtrl.text = _dropdownValue!;
-      _dropdownValue = _customCategoryOption;
-    }
-
-    final dropdownItems = [
-      ...catalogCategories
-          .map((c) => DropdownMenuItem(value: c, child: Text(c))),
-      const DropdownMenuItem(
-        value: _customCategoryOption,
-        child: Text(
-          'Other (custom)…',
-          style: TextStyle(fontStyle: FontStyle.italic),
-        ),
-      ),
-    ];
-
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -152,9 +110,7 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              widget.initial == null
-                  ? 'Create Custom Exercise'
-                  : 'Edit Exercise',
+              widget.initial == null ? 'Create Custom Exercise' : 'Edit Exercise',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -167,42 +123,23 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _isCustomCategory ? _customCategoryOption : _dropdownValue,
-              decoration: const InputDecoration(labelText: 'Category'),
-              items: dropdownItems,
-              onChanged: (v) {
-                setState(() {
-                  if (v == _customCategoryOption) {
-                    _isCustomCategory = true;
-                    _dropdownValue = _customCategoryOption;
-                  } else {
-                    _isCustomCategory = false;
-                    _dropdownValue = v;
-                    _customCategoryCtrl.clear();
-                  }
-                });
-              },
-              validator: (_) =>
-                  _resolvedCategory == null ? 'Required' : null,
-            ),
-            if (_isCustomCategory) ...[
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _customCategoryCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Custom category name'),
-                textCapitalization: TextCapitalization.words,
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
-              ),
-            ],
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _muscleCtrl,
+              initialValue: _selectedMuscle,
               decoration: const InputDecoration(labelText: 'Muscle group'),
-              textCapitalization: TextCapitalization.words,
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Required' : null,
+              items: _muscleOptions
+                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedMuscle = v),
+              validator: (v) => v == null ? 'Required' : null,
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedEquipment,
+              decoration: const InputDecoration(labelText: 'Equipment'),
+              items: _equipmentOptions
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedEquipment = v),
+              validator: (v) => v == null ? 'Required' : null,
             ),
             const SizedBox(height: 24),
             FilledButton(

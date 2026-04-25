@@ -11,6 +11,9 @@ _Exercise _$ExerciseFromJson(Map<String, dynamic> json) => _Exercise(
   name: json['name'] as String,
   category: json['category'] as String,
   muscleGroup: json['muscle_group'] as String,
+  muscles:
+      (json['muscles'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
   isCustom: json['is_custom'] as bool,
   createdBy: json['created_by'] as String?,
 );
@@ -20,6 +23,7 @@ Map<String, dynamic> _$ExerciseToJson(_Exercise instance) => <String, dynamic>{
   'name': instance.name,
   'category': instance.category,
   'muscle_group': instance.muscleGroup,
+  'muscles': instance.muscles,
   'is_custom': instance.isCustom,
   'created_by': instance.createdBy,
 };

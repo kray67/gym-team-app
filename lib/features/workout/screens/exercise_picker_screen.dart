@@ -5,7 +5,17 @@ import 'package:gym_team/features/workout/providers/exercises_provider.dart';
 import 'package:gym_team/features/workout/widgets/exercise_form_sheet.dart';
 import 'package:gym_team/shared/models/exercise.dart';
 
-const _allCategory = 'All';
+const _all = 'All';
+
+const _muscleOptions = [
+  'Arms', 'Back', 'Chest', 'Core', 'Full-Body',
+  'Glutes', 'Legs', 'Olympic', 'Other', 'Shoulders',
+];
+
+const _equipmentOptions = [
+  'Barbell', 'Bodyweight', 'Cable', 'Cardio',
+  'Dumbbell', 'Kettlebell', 'Machine', 'Safety Bar', 'Smith Machine',
+];
 
 class ExercisePickerResult {
   final List<Exercise> exercises;
@@ -25,7 +35,8 @@ class ExercisePickerScreen extends ConsumerStatefulWidget {
 class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
-  String _selectedCategory = _allCategory;
+  String _selectedMuscle = _all;
+  String _selectedEquipment = _all;
   final _selected = <Exercise>[];
 
   @override
@@ -34,19 +45,17 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
     super.dispose();
   }
 
-  List<String> _categories(List<Exercise> all) {
-    final cats = all.map((e) => e.category).toSet().toList()..sort();
-    return [_allCategory, ...cats];
-  }
-
   List<Exercise> _filtered(List<Exercise> all) {
     return all.where((e) {
-      final matchesCategory =
-          _selectedCategory == _allCategory || e.category == _selectedCategory;
+      final matchesMuscle = _selectedMuscle == _all ||
+          e.muscles.contains(_selectedMuscle) ||
+          e.muscleGroup == _selectedMuscle;
+      final matchesEquipment =
+          _selectedEquipment == _all || e.category == _selectedEquipment;
       final matchesQuery = _query.isEmpty ||
           e.name.toLowerCase().contains(_query.toLowerCase()) ||
           e.muscleGroup.toLowerCase().contains(_query.toLowerCase());
-      return matchesCategory && matchesQuery;
+      return matchesMuscle && matchesEquipment && matchesQuery;
     }).toList();
   }
 
@@ -61,6 +70,43 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
     });
   }
 
+  Widget _filterRow({
+    required String label,
+    required String selected,
+    required List<String> options,
+    required void Function(String) onSelect,
+  }) {
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 6, top: 6, bottom: 6),
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontSize: 12, color: Colors.white38),
+            ),
+          ),
+          ...[_all, ...options].map((opt) {
+            final isSelected = opt == selected;
+            return Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: FilterChip(
+                label: Text(opt, style: const TextStyle(fontSize: 12)),
+                selected: isSelected,
+                onSelected: (_) => setState(() => onSelect(opt)),
+                showCheckmark: false,
+                visualDensity: VisualDensity.compact,
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final asyncExercises = ref.watch(exercisesProvider);
@@ -68,6 +114,13 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Exercise'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Create custom exercise',
+            onPressed: () => showExerciseFormSheet(context),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
@@ -137,31 +190,23 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (all) {
-          final categories = _categories(all);
           final filtered = _filtered(all);
 
           return Column(
             children: [
-              // Category chips
-              SizedBox(
-                height: 48,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: categories.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 8),
-                  itemBuilder: (context, i) {
-                    final cat = categories[i];
-                    final selected = cat == _selectedCategory;
-                    return FilterChip(
-                      label: Text(cat),
-                      selected: selected,
-                      onSelected: (_) =>
-                          setState(() => _selectedCategory = cat),
-                      showCheckmark: false,
-                    );
-                  },
-                ),
+              // Muscle group filter
+              _filterRow(
+                label: 'Muscle',
+                selected: _selectedMuscle,
+                options: _muscleOptions,
+                onSelect: (v) => _selectedMuscle = v,
+              ),
+              // Equipment filter
+              _filterRow(
+                label: 'Equipment',
+                selected: _selectedEquipment,
+                options: _equipmentOptions,
+                onSelect: (v) => _selectedEquipment = v,
               ),
               const Divider(height: 1),
               // Create custom exercise banner
@@ -172,8 +217,8 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                       .colorScheme
                       .primaryContainer
                       .withValues(alpha: 0.15),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Row(
                     children: [
                       Icon(Icons.add_circle,
@@ -192,8 +237,8 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                           ),
                           const Text(
                             'Add an exercise not in the catalog',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.white54),
+                            style:
+                                TextStyle(fontSize: 12, color: Colors.white54),
                           ),
                         ],
                       ),
@@ -216,7 +261,6 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                         ),
                       )
                     : ListView.builder(
-                        // Extra bottom padding so last item clears the button bar
                         padding: widget.singleSelect
                             ? EdgeInsets.zero
                             : const EdgeInsets.only(bottom: 16),
@@ -226,20 +270,22 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                           final selIdx = _selected.indexOf(ex);
                           final isSelected = selIdx != -1;
 
-                          // Show category header when not filtering by category
-                          final showHeader = _selectedCategory == _allCategory &&
+                          final showHeader = _selectedMuscle == _all &&
+                              _selectedEquipment == _all &&
                               _query.isEmpty &&
                               (i == 0 ||
-                                  filtered[i - 1].category != ex.category);
+                                  filtered[i - 1].muscleGroup !=
+                                      ex.muscleGroup);
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (showHeader)
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      16, 12, 16, 4),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(16, 12, 16, 4),
                                   child: Text(
-                                    ex.category.toUpperCase(),
+                                    ex.muscleGroup.toUpperCase(),
                                     style: Theme.of(context)
                                         .textTheme
                                         .labelSmall
@@ -257,8 +303,8 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                                 title: Text(ex.name),
                                 subtitle: Text(
                                   ex.isCustom
-                                      ? 'Custom · ${ex.muscleGroup}'
-                                      : ex.muscleGroup,
+                                      ? 'Custom · ${ex.muscleGroup} · ${ex.category}'
+                                      : '${ex.muscleGroup} · ${ex.category}',
                                   style: TextStyle(
                                     color: ex.isCustom
                                         ? Theme.of(context).colorScheme.primary
