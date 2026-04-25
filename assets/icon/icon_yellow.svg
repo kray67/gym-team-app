@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="#1A1500"/>
+
+  <!-- Left weight plate -->
+  <rect x="212" y="330" width="90" height="200" rx="16" fill="#FFD54F"/>
+  <!-- Left collar -->
+  <rect x="302" y="355" width="26" height="150" rx="7" fill="#FFCA28"/>
+  <!-- Bar -->
+  <rect x="328" y="416" width="368" height="28" rx="14" fill="#FFC107"/>
+  <!-- Right collar -->
+  <rect x="696" y="355" width="26" height="150" rx="7" fill="#FFCA28"/>
+  <!-- Right weight plate -->
+  <rect x="722" y="330" width="90" height="200" rx="16" fill="#FFD54F"/>
+
+  <!-- App name: "Gym" white + "Team" accent -->
+  <text
+    x="512" y="660"
+    text-anchor="middle"
+    font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+    font-size="96"
+    font-weight="800"
+    letter-spacing="-1"
+    fill="#FFFFFF">Gym<tspan fill="#FFD54F">Team</tspan></text>
+
+</svg>

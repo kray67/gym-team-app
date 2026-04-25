@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+
+  <!--
+    Adaptive icon foreground — white dumbbell on transparent background.
+    Centered at (512, 512). Safe zone: inner 682×682px.
+    Dumbbell: 600×200px, fully within the safe zone.
+  -->
+
+  <!-- Left weight plate -->
+  <rect x="212" y="412" width="90" height="200" rx="16" fill="#FFFFFF"/>
+  <!-- Left collar -->
+  <rect x="302" y="437" width="26" height="150" rx="7" fill="#FFFFFF"/>
+  <!-- Bar -->
+  <rect x="328" y="498" width="368" height="28" rx="14" fill="#FFFFFF"/>
+  <!-- Right collar -->
+  <rect x="696" y="437" width="26" height="150" rx="7" fill="#FFFFFF"/>
+  <!-- Right weight plate -->
+  <rect x="722" y="412" width="90" height="200" rx="16" fill="#FFFFFF"/>
+
+</svg>

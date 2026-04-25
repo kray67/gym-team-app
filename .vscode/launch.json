@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "gym_team (debug)",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "--dart-define=SUPABASE_URL=https://dcyqgyhotqhyyzswdpzz.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjeXFneWhvdHFoeXl6c3dkcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzcwNzEsImV4cCI6MjA5MTM1MzA3MX0.Xf0F_i1fvOTVr5499ww4-5BLvsIxIKJK9P8vvphSMWI"
+      ]
+    }
+  ]
+}
