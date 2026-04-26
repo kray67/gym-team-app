@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_team/core/supabase/supabase_client.dart';
+import 'package:gym_team/features/workout/providers/custom_exercises_notifier.dart';
 import 'package:gym_team/features/workout/providers/exercises_provider.dart';
 import 'package:gym_team/features/workout/widgets/exercise_form_sheet.dart';
 import 'package:gym_team/shared/models/exercise.dart';
@@ -46,7 +48,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
   }
 
   List<Exercise> _filtered(List<Exercise> all) {
-    return all.where((e) {
+    final result = all.where((e) {
       final matchesMuscle = _selectedMuscle == _all ||
           e.muscles.contains(_selectedMuscle) ||
           e.muscleGroup == _selectedMuscle;
@@ -57,6 +59,8 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
           e.muscleGroup.toLowerCase().contains(_query.toLowerCase());
       return matchesMuscle && matchesEquipment && matchesQuery;
     }).toList();
+    result.sort((a, b) => a.name.compareTo(b.name));
+    return result;
   }
 
   void _toggle(Exercise ex) {
@@ -70,46 +74,36 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
     });
   }
 
-  Widget _filterRow({
-    required String label,
-    required String selected,
-    required List<String> options,
-    required void Function(String) onSelect,
-  }) {
-    return SizedBox(
-      height: 44,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 6, top: 6, bottom: 6),
-            child: Text(
-              '$label:',
-              style: const TextStyle(fontSize: 12, color: Colors.white38),
-            ),
+  Future<void> _deleteCustomExercise(Exercise ex) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete exercise?'),
+        content: Text('"${ex.name}" will be permanently deleted.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
           ),
-          ...[_all, ...options].map((opt) {
-            final isSelected = opt == selected;
-            return Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: FilterChip(
-                label: Text(opt, style: const TextStyle(fontSize: 12)),
-                selected: isSelected,
-                onSelected: (_) => setState(() => onSelect(opt)),
-                showCheckmark: false,
-                visualDensity: VisualDensity.compact,
-              ),
-            );
-          }),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
+    if (confirmed == true && mounted) {
+      await ref.read(customExercisesNotifierProvider.notifier).delete(ex.id);
+      // Remove from selection if it was selected
+      setState(() => _selected.remove(ex));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final asyncExercises = ref.watch(exercisesProvider);
+    final currentUserId = supabase.auth.currentUser?.id;
 
     return Scaffold(
       appBar: AppBar(
@@ -194,22 +188,55 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
 
           return Column(
             children: [
-              // Muscle group filter
-              _filterRow(
-                label: 'Muscle',
-                selected: _selectedMuscle,
-                options: _muscleOptions,
-                onSelect: (v) => _selectedMuscle = v,
-              ),
-              // Equipment filter
-              _filterRow(
-                label: 'Equipment',
-                selected: _selectedEquipment,
-                options: _equipmentOptions,
-                onSelect: (v) => _selectedEquipment = v,
+              // ── Filter dropdowns ──────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _selectedMuscle,
+                        isDense: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Muscle',
+                          isDense: true,
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          border: OutlineInputBorder(),
+                        ),
+                        items: [_all, ..._muscleOptions]
+                            .map((m) =>
+                                DropdownMenuItem(value: m, child: Text(m)))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _selectedMuscle = v ?? _all),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _selectedEquipment,
+                        isDense: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Equipment',
+                          isDense: true,
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          border: OutlineInputBorder(),
+                        ),
+                        items: [_all, ..._equipmentOptions]
+                            .map((e) =>
+                                DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _selectedEquipment = v ?? _all),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const Divider(height: 1),
-              // Create custom exercise banner
+              // ── Create custom exercise banner ─────────────────────────────
               InkWell(
                 onTap: () => showExerciseFormSheet(context),
                 child: Container(
@@ -250,7 +277,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                 ),
               ),
               const Divider(height: 1),
-              // Exercise list
+              // ── Exercise list ─────────────────────────────────────────────
               Expanded(
                 child: filtered.isEmpty
                     ? Center(
@@ -269,78 +296,82 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                           final ex = filtered[i];
                           final selIdx = _selected.indexOf(ex);
                           final isSelected = selIdx != -1;
+                          final isOwnCustom = ex.isCustom &&
+                              ex.createdBy == currentUserId;
 
-                          final showHeader = _selectedMuscle == _all &&
-                              _selectedEquipment == _all &&
-                              _query.isEmpty &&
-                              (i == 0 ||
-                                  filtered[i - 1].muscleGroup !=
-                                      ex.muscleGroup);
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (showHeader)
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                                  child: Text(
-                                    ex.muscleGroup.toUpperCase(),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          letterSpacing: 1.2,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                  ),
-                                ),
-                              ListTile(
-                                dense: true,
-                                title: Text(ex.name),
-                                subtitle: Text(
-                                  ex.isCustom
-                                      ? 'Custom · ${ex.muscleGroup} · ${ex.category}'
-                                      : '${ex.muscleGroup} · ${ex.category}',
-                                  style: TextStyle(
-                                    color: ex.isCustom
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Colors.white54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                trailing: widget.singleSelect
-                                    ? const Icon(Icons.add_circle_outline,
-                                        size: 20)
-                                    : isSelected
-                                        ? CircleAvatar(
-                                            radius: 12,
-                                            backgroundColor: Colors.green,
-                                            child: Text(
-                                              '${selIdx + 1}',
-                                              style: const TextStyle(
-                                                  fontSize: 11,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          )
-                                        : const Icon(Icons.add_circle_outline,
-                                            size: 20),
-                                onTap: () {
-                                  if (widget.singleSelect) {
-                                    context.pop(ExercisePickerResult(
-                                      exercises: [ex],
-                                      asSuperset: false,
-                                    ));
-                                  } else {
-                                    _toggle(ex);
-                                  }
-                                },
+                          return ListTile(
+                            dense: true,
+                            title: Text(ex.name),
+                            subtitle: Text(
+                              ex.isCustom
+                                  ? 'Custom · ${ex.muscleGroup} · ${ex.category}'
+                                  : '${ex.muscleGroup} · ${ex.category}',
+                              style: TextStyle(
+                                color: ex.isCustom
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.white54,
+                                fontSize: 12,
                               ),
-                            ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Selection indicator
+                                if (widget.singleSelect)
+                                  const Icon(Icons.add_circle_outline, size: 20)
+                                else if (isSelected)
+                                  CircleAvatar(
+                                    radius: 12,
+                                    backgroundColor: Colors.green,
+                                    child: Text(
+                                      '${selIdx + 1}',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  )
+                                else
+                                  const Icon(Icons.add_circle_outline,
+                                      size: 20),
+                                // Edit/delete for own custom exercises
+                                if (isOwnCustom) ...[
+                                  const SizedBox(width: 4),
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert,
+                                        size: 18, color: Colors.white38),
+                                    onSelected: (v) async {
+                                      if (v == 'edit') {
+                                        await showExerciseFormSheet(context,
+                                            initial: ex);
+                                      } else if (v == 'delete') {
+                                        await _deleteCustomExercise(ex);
+                                      }
+                                    },
+                                    itemBuilder: (_) => [
+                                      const PopupMenuItem(
+                                          value: 'edit', child: Text('Edit')),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text('Delete',
+                                            style: TextStyle(
+                                                color: Colors.redAccent)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                            onTap: () {
+                              if (widget.singleSelect) {
+                                context.pop(ExercisePickerResult(
+                                  exercises: [ex],
+                                  asSuperset: false,
+                                ));
+                              } else {
+                                _toggle(ex);
+                              }
+                            },
                           );
                         },
                       ),

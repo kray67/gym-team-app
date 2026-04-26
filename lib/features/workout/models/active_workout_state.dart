@@ -28,6 +28,8 @@ abstract class ActiveExerciseEntry with _$ActiveExerciseEntry {
     @Default('kg') String weightType,
     @Default([]) List<ActiveSetEntry> sets,
     String? supersetGroupId,
+    /// Optional coach/user note shown below the muscle group label.
+    String? note,
   }) = _ActiveExerciseEntry;
 }
 

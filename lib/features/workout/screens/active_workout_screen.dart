@@ -10,7 +10,7 @@ import 'package:gym_team/features/workout/providers/workout_history_provider.dar
 import 'package:gym_team/features/workout/screens/exercise_picker_screen.dart';
 
 // Column widths — free workout
-const _kSetW = 32.0;
+const _kSetW = 44.0; // dots icon + set number
 const _kPrevW = 90.0;
 const _kInputW = 62.0;
 const _kCheckW = 36.0;
@@ -333,6 +333,171 @@ List<dynamic> _buildActiveSlots(List<ActiveExerciseEntry> exercises) {
   return slots;
 }
 
+/// Shows a sheet to pick isolated exercises and form a new superset.
+/// [initiatingId] is pre-selected (the exercise the user tapped from).
+Future<void> _showCreateSupersetSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  required String initiatingId,
+}) async {
+  final workout = ref.read(activeWorkoutNotifierProvider);
+  if (workout == null) return;
+  final isolated = workout.exercises
+      .where((e) => e.supersetGroupId == null)
+      .toList();
+  if (isolated.length < 2) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Add more exercises to create a superset')),
+    );
+    return;
+  }
+  final confirmed = await showModalBottomSheet<Set<String>>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => _SupersetPickerSheet(
+      exercises: isolated,
+      initialSelected: {initiatingId},
+      title: 'Create Superset',
+      confirmLabel: 'Create',
+      minSelected: 2,
+    ),
+  );
+  if (confirmed != null && confirmed.length >= 2) {
+    ref.read(activeWorkoutNotifierProvider.notifier).formSuperset(confirmed.toList());
+  }
+}
+
+/// Shows a sheet to pick isolated exercises and add them to an existing superset.
+Future<void> _showAddToSupersetSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  required String groupId,
+}) async {
+  final workout = ref.read(activeWorkoutNotifierProvider);
+  if (workout == null) return;
+  final isolated = workout.exercises
+      .where((e) => e.supersetGroupId == null)
+      .toList();
+  if (isolated.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No isolated exercises to add')),
+    );
+    return;
+  }
+  final confirmed = await showModalBottomSheet<Set<String>>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => _SupersetPickerSheet(
+      exercises: isolated,
+      initialSelected: {},
+      title: 'Add to Superset',
+      confirmLabel: 'Add',
+      minSelected: 1,
+    ),
+  );
+  if (confirmed != null && confirmed.isNotEmpty) {
+    ref
+        .read(activeWorkoutNotifierProvider.notifier)
+        .addExercisesToSuperset(groupId, confirmed.toList());
+  }
+}
+
+/// Modal bottom sheet for picking exercises to include in a superset.
+class _SupersetPickerSheet extends StatefulWidget {
+  final List<ActiveExerciseEntry> exercises;
+  final Set<String> initialSelected;
+  final String title;
+  final String confirmLabel;
+  final int minSelected;
+
+  const _SupersetPickerSheet({
+    required this.exercises,
+    required this.initialSelected,
+    required this.title,
+    required this.confirmLabel,
+    required this.minSelected,
+  });
+
+  @override
+  State<_SupersetPickerSheet> createState() => _SupersetPickerSheetState();
+}
+
+class _SupersetPickerSheetState extends State<_SupersetPickerSheet> {
+  late final Set<String> _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = Set.from(widget.initialSelected);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(widget.title,
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(
+            'Select at least ${widget.minSelected} exercises',
+            style: const TextStyle(color: Colors.white38, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          ...widget.exercises.map((e) {
+            final isSelected = _selected.contains(e.id);
+            final selIdx = _selected.toList().indexOf(e.id);
+            return ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(e.exercise.name),
+              subtitle: Text(
+                '${e.exercise.muscleGroup} · ${e.exercise.category}',
+                style: const TextStyle(color: Colors.white38, fontSize: 12),
+              ),
+              trailing: isSelected
+                  ? CircleAvatar(
+                      radius: 12,
+                      backgroundColor: Colors.green,
+                      child: Text(
+                        '${selIdx + 1}',
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  : const Icon(Icons.add_circle_outline, size: 20),
+              onTap: () => setState(() {
+                if (isSelected) {
+                  _selected.remove(e.id);
+                } else {
+                  _selected.add(e.id);
+                }
+              }),
+            );
+          }),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _selected.length >= widget.minSelected
+                ? () => Navigator.of(context).pop(_selected)
+                : null,
+            child: Text(widget.confirmLabel),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -411,11 +576,19 @@ class _SupersetWrapper extends ConsumerWidget {
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_horiz,
                         color: Colors.white38, size: 20),
-                    onSelected: (v) {
-                      if (v == 'break') notifier.breakSuperset(groupId);
-                      if (v == 'remove') notifier.removeSuperset(groupId);
+                    onSelected: (v) async {
+                      if (v == 'add') {
+                        await _showAddToSupersetSheet(
+                            context, ref, groupId: groupId);
+                      } else if (v == 'break') {
+                        notifier.breakSuperset(groupId);
+                      } else if (v == 'remove') {
+                        notifier.removeSuperset(groupId);
+                      }
                     },
                     itemBuilder: (_) => const [
+                      PopupMenuItem(
+                          value: 'add', child: Text('Add exercise…')),
                       PopupMenuItem(
                           value: 'break', child: Text('Break Superset')),
                       PopupMenuItem(
@@ -596,6 +769,43 @@ class _ExerciseCard extends ConsumerWidget {
                         if (result != null) {
                           notifier.swapExercise(entry.id, result.exercises.first);
                         }
+                      } else if (v == 'note') {
+                        final ctrl = TextEditingController(text: entry.note);
+                        final saved = await showDialog<String>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Exercise note'),
+                            content: TextField(
+                              controller: ctrl,
+                              autofocus: true,
+                              maxLines: 3,
+                              decoration: const InputDecoration(
+                                hintText: 'Add a note…',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancel'),
+                              ),
+                              FilledButton(
+                                onPressed: () =>
+                                    Navigator.pop(ctx, ctrl.text),
+                                child: const Text('Save'),
+                              ),
+                            ],
+                          ),
+                        );
+                        ctrl.dispose();
+                        if (saved != null) {
+                          notifier.setNote(entry.id,
+                              saved.trim().isEmpty ? null : saved.trim());
+                        }
+                      } else if (v == 'superset') {
+                        if (!context.mounted) return;
+                        await _showCreateSupersetSheet(context, ref,
+                            initiatingId: entry.id);
                       } else if (v == 'remove_from_ss') {
                         notifier.removeFromSuperset(entry.id);
                       } else if (v == 'remove') {
@@ -604,6 +814,14 @@ class _ExerciseCard extends ConsumerWidget {
                     },
                     itemBuilder: (_) => [
                       const PopupMenuItem(value: 'swap', child: Text('Swap exercise')),
+                      PopupMenuItem(
+                        value: 'note',
+                        child: Text(entry.note != null ? 'Edit note' : 'Add note'),
+                      ),
+                      if (!isInSuperset)
+                        const PopupMenuItem(
+                            value: 'superset',
+                            child: Text('Add to superset…')),
                       if (isInSuperset)
                         const PopupMenuItem(
                             value: 'remove_from_ss',
@@ -620,6 +838,16 @@ class _ExerciseCard extends ConsumerWidget {
               Text(entry.exercise.muscleGroup,
                   style: const TextStyle(
                       color: Colors.white38, fontSize: 12)),
+              if (entry.note != null && entry.note!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  entry.note!,
+                  style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic),
+                ),
+              ],
               const SizedBox(height: 10),
 
               // ── Column headers ────────────────────────────────────────────
@@ -765,6 +993,68 @@ class _SetRowState extends ConsumerState<_SetRow> {
   late final TextEditingController _repsCtrl;
   late final TextEditingController _rpeCtrl;
 
+  Future<void> _showSetMenu() async {
+    final set = widget.set;
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final offset = box.localToGlobal(Offset.zero);
+    final choice = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        offset.dx, offset.dy,
+        offset.dx + box.size.width, offset.dy + box.size.height,
+      ),
+      items: [
+        PopupMenuItem(
+          value: 'work',
+          child: Row(children: [
+            Icon(Icons.fitness_center, size: 16,
+                color: !set.isWarmup
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.white38),
+            const SizedBox(width: 8),
+            Text('Work Set',
+                style: TextStyle(
+                    color: !set.isWarmup
+                        ? Theme.of(context).colorScheme.primary
+                        : null)),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'warmup',
+          child: Row(children: [
+            Icon(Icons.thermostat, size: 16,
+                color: set.isWarmup
+                    ? Colors.orange.shade300
+                    : Colors.white38),
+            const SizedBox(width: 8),
+            Text('Warm-up Set',
+                style: TextStyle(
+                    color: set.isWarmup ? Colors.orange.shade300 : null)),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'remove',
+          child: Row(children: [
+            Icon(Icons.delete_outline, size: 16, color: Colors.red.shade300),
+            const SizedBox(width: 8),
+            Text('Remove Set',
+                style: TextStyle(color: Colors.red.shade300)),
+          ]),
+        ),
+      ],
+    );
+    if (!mounted) return;
+    final notifier = ref.read(activeWorkoutNotifierProvider.notifier);
+    if (choice == 'work' && set.isWarmup) {
+      notifier.toggleSetWarmup(widget.exerciseId, set.id);
+    } else if (choice == 'warmup' && !set.isWarmup) {
+      notifier.toggleSetWarmup(widget.exerciseId, set.id);
+    } else if (choice == 'remove') {
+      notifier.removeSet(widget.exerciseId, set.id);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -813,76 +1103,8 @@ class _SetRowState extends ConsumerState<_SetRow> {
           children: [
             // ── Plan-mode TARGET column layout ────────────────────────────
             if (widget.showTarget) ...[
-              // Set number (tap to toggle warm-up)
-              GestureDetector(
-                onTap: () async {
-                  final box = context.findRenderObject() as RenderBox?;
-                  if (box == null) return;
-                  final offset = box.localToGlobal(Offset.zero);
-                  final choice = await showMenu<String>(
-                    context: context,
-                    position: RelativeRect.fromLTRB(
-                      offset.dx, offset.dy, offset.dx + box.size.width, offset.dy + box.size.height,
-                    ),
-                    items: [
-                      PopupMenuItem(
-                        value: 'work',
-                        child: Row(children: [
-                          Icon(Icons.fitness_center, size: 16,
-                              color: !set.isWarmup ? Theme.of(context).colorScheme.primary : Colors.white38),
-                          const SizedBox(width: 8),
-                          Text('Work Set',
-                              style: TextStyle(color: !set.isWarmup ? Theme.of(context).colorScheme.primary : null)),
-                        ]),
-                      ),
-                      PopupMenuItem(
-                        value: 'warmup',
-                        child: Row(children: [
-                          Icon(Icons.thermostat, size: 16,
-                              color: set.isWarmup ? Colors.orange.shade300 : Colors.white38),
-                          const SizedBox(width: 8),
-                          Text('Warm-up Set',
-                              style: TextStyle(color: set.isWarmup ? Colors.orange.shade300 : null)),
-                        ]),
-                      ),
-                      PopupMenuItem(
-                        value: 'remove',
-                        child: Row(children: [
-                          Icon(Icons.delete_outline, size: 16,
-                              color: Colors.red.shade300),
-                          const SizedBox(width: 8),
-                          Text('Remove Set',
-                              style: TextStyle(color: Colors.red.shade300)),
-                        ]),
-                      ),
-                    ],
-                  );
-                  if (!context.mounted) return;
-                  final notifier2 = ref.read(activeWorkoutNotifierProvider.notifier);
-                  if (choice == 'work' && set.isWarmup) {
-                    notifier2.toggleSetWarmup(widget.exerciseId, set.id);
-                  } else if (choice == 'warmup' && !set.isWarmup) {
-                    notifier2.toggleSetWarmup(widget.exerciseId, set.id);
-                  } else if (choice == 'remove') {
-                    notifier2.removeSet(widget.exerciseId, set.id);
-                  }
-                },
-                child: SizedBox(
-                  width: _kSetW,
-                  child: Text(
-                    set.isWarmup ? 'W' : '${set.setNumber}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: set.isWarmup
-                          ? Colors.orange.shade300
-                          : completed
-                              ? Colors.green
-                              : Colors.white70,
-                    ),
-                  ),
-                ),
-              ),
+              // 3-dot button + set number
+              _SetMenuCell(set: set, onTap: _showSetMenu),
               const SizedBox(width: 4),
               SizedBox(
                 width: _kPrevWPlan,
@@ -953,79 +1175,7 @@ class _SetRowState extends ConsumerState<_SetRow> {
               ),
             ] else ...[
             // ── Free-workout layout ───────────────────────────────────────
-
-            // Set number — tap to toggle warm-up
-            GestureDetector(
-              onTap: () async {
-                final box = context.findRenderObject() as RenderBox?;
-                if (box == null) return;
-                final offset = box.localToGlobal(Offset.zero);
-                final choice = await showMenu<String>(
-                  context: context,
-                  position: RelativeRect.fromLTRB(
-                    offset.dx, offset.dy, offset.dx + box.size.width, offset.dy + box.size.height,
-                  ),
-                  items: [
-                    PopupMenuItem(
-                      value: 'work',
-                      child: Row(children: [
-                        Icon(Icons.fitness_center, size: 16,
-                            color: !set.isWarmup ? Theme.of(context).colorScheme.primary : Colors.white38),
-                        const SizedBox(width: 8),
-                        Text('Work Set',
-                            style: TextStyle(
-                                color: !set.isWarmup
-                                    ? Theme.of(context).colorScheme.primary
-                                    : null)),
-                      ]),
-                    ),
-                    PopupMenuItem(
-                      value: 'warmup',
-                      child: Row(children: [
-                        Icon(Icons.thermostat, size: 16,
-                            color: set.isWarmup ? Colors.orange.shade300 : Colors.white38),
-                        const SizedBox(width: 8),
-                        Text('Warm-up Set',
-                            style: TextStyle(
-                                color: set.isWarmup ? Colors.orange.shade300 : null)),
-                      ]),
-                    ),
-                    PopupMenuItem(
-                      value: 'remove',
-                      child: Row(children: [
-                        Icon(Icons.delete_outline, size: 16,
-                            color: Colors.red.shade300),
-                        const SizedBox(width: 8),
-                        Text('Remove Set',
-                            style: TextStyle(color: Colors.red.shade300)),
-                      ]),
-                    ),
-                  ],
-                );
-                if (choice == 'work' && set.isWarmup) {
-                  notifier.toggleSetWarmup(widget.exerciseId, set.id);
-                } else if (choice == 'warmup' && !set.isWarmup) {
-                  notifier.toggleSetWarmup(widget.exerciseId, set.id);
-                } else if (choice == 'remove') {
-                  notifier.removeSet(widget.exerciseId, set.id);
-                }
-              },
-              child: SizedBox(
-                width: _kSetW,
-                child: Text(
-                  set.isWarmup ? 'W' : '${set.setNumber}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: set.isWarmup
-                        ? Colors.orange.shade300
-                        : completed
-                            ? Colors.green
-                            : Colors.white70,
-                  ),
-                ),
-              ),
-            ),
+            _SetMenuCell(set: set, onTap: _showSetMenu),
             const SizedBox(width: 8),
             // Previous performance
             SizedBox(
@@ -1128,6 +1278,48 @@ class _SetRowState extends ConsumerState<_SetRow> {
       ),
     ],  // closes Stack children
     );  // closes Stack
+  }
+}
+
+// ── Set menu cell (3-dot button + set number) ─────────────────────────────────
+
+class _SetMenuCell extends StatelessWidget {
+  final ActiveSetEntry set;
+  final VoidCallback onTap;
+  const _SetMenuCell({required this.set, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = set.isWarmup
+        ? Colors.orange.shade300
+        : set.completed
+            ? Colors.green
+            : Colors.white70;
+    return SizedBox(
+      width: _kSetW,
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+              child: Icon(Icons.more_vert, size: 13, color: Colors.white24),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              set.isWarmup ? 'W' : '${set.setNumber}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

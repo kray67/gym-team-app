@@ -297,7 +297,8 @@ as String?,
 mixin _$ActiveExerciseEntry {
 
  String get id; Exercise get exercise;/// 'kg' | 'percent_1rm' | 'rpe'
- String get weightType; List<ActiveSetEntry> get sets; String? get supersetGroupId;
+ String get weightType; List<ActiveSetEntry> get sets; String? get supersetGroupId;/// Optional coach/user note shown below the muscle group label.
+ String? get note;
 /// Create a copy of ActiveExerciseEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -308,16 +309,16 @@ $ActiveExerciseEntryCopyWith<ActiveExerciseEntry> get copyWith => _$ActiveExerci
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveExerciseEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&const DeepCollectionEquality().equals(other.sets, sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveExerciseEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&const DeepCollectionEquality().equals(other.sets, sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId)&&(identical(other.note, note) || other.note == note));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,exercise,weightType,const DeepCollectionEquality().hash(sets),supersetGroupId);
+int get hashCode => Object.hash(runtimeType,id,exercise,weightType,const DeepCollectionEquality().hash(sets),supersetGroupId,note);
 
 @override
 String toString() {
-  return 'ActiveExerciseEntry(id: $id, exercise: $exercise, weightType: $weightType, sets: $sets, supersetGroupId: $supersetGroupId)';
+  return 'ActiveExerciseEntry(id: $id, exercise: $exercise, weightType: $weightType, sets: $sets, supersetGroupId: $supersetGroupId, note: $note)';
 }
 
 
@@ -328,7 +329,7 @@ abstract mixin class $ActiveExerciseEntryCopyWith<$Res>  {
   factory $ActiveExerciseEntryCopyWith(ActiveExerciseEntry value, $Res Function(ActiveExerciseEntry) _then) = _$ActiveExerciseEntryCopyWithImpl;
 @useResult
 $Res call({
- String id, Exercise exercise, String weightType, List<ActiveSetEntry> sets, String? supersetGroupId
+ String id, Exercise exercise, String weightType, List<ActiveSetEntry> sets, String? supersetGroupId, String? note
 });
 
 
@@ -345,13 +346,14 @@ class _$ActiveExerciseEntryCopyWithImpl<$Res>
 
 /// Create a copy of ActiveExerciseEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exercise = null,Object? weightType = null,Object? sets = null,Object? supersetGroupId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exercise = null,Object? weightType = null,Object? sets = null,Object? supersetGroupId = freezed,Object? note = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exercise: null == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
 as Exercise,weightType: null == weightType ? _self.weightType : weightType // ignore: cast_nullable_to_non_nullable
 as String,sets: null == sets ? _self.sets : sets // ignore: cast_nullable_to_non_nullable
 as List<ActiveSetEntry>,supersetGroupId: freezed == supersetGroupId ? _self.supersetGroupId : supersetGroupId // ignore: cast_nullable_to_non_nullable
+as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -446,10 +448,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  Exercise exercise,  String weightType,  List<ActiveSetEntry> sets,  String? supersetGroupId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  Exercise exercise,  String weightType,  List<ActiveSetEntry> sets,  String? supersetGroupId,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ActiveExerciseEntry() when $default != null:
-return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supersetGroupId);case _:
+return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supersetGroupId,_that.note);case _:
   return orElse();
 
 }
@@ -467,10 +469,10 @@ return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supers
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  Exercise exercise,  String weightType,  List<ActiveSetEntry> sets,  String? supersetGroupId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  Exercise exercise,  String weightType,  List<ActiveSetEntry> sets,  String? supersetGroupId,  String? note)  $default,) {final _that = this;
 switch (_that) {
 case _ActiveExerciseEntry():
-return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supersetGroupId);case _:
+return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supersetGroupId,_that.note);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -487,10 +489,10 @@ return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supers
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  Exercise exercise,  String weightType,  List<ActiveSetEntry> sets,  String? supersetGroupId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  Exercise exercise,  String weightType,  List<ActiveSetEntry> sets,  String? supersetGroupId,  String? note)?  $default,) {final _that = this;
 switch (_that) {
 case _ActiveExerciseEntry() when $default != null:
-return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supersetGroupId);case _:
+return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supersetGroupId,_that.note);case _:
   return null;
 
 }
@@ -502,7 +504,7 @@ return $default(_that.id,_that.exercise,_that.weightType,_that.sets,_that.supers
 
 
 class _ActiveExerciseEntry implements ActiveExerciseEntry {
-  const _ActiveExerciseEntry({required this.id, required this.exercise, this.weightType = 'kg', final  List<ActiveSetEntry> sets = const [], this.supersetGroupId}): _sets = sets;
+  const _ActiveExerciseEntry({required this.id, required this.exercise, this.weightType = 'kg', final  List<ActiveSetEntry> sets = const [], this.supersetGroupId, this.note}): _sets = sets;
   
 
 @override final  String id;
@@ -517,6 +519,8 @@ class _ActiveExerciseEntry implements ActiveExerciseEntry {
 }
 
 @override final  String? supersetGroupId;
+/// Optional coach/user note shown below the muscle group label.
+@override final  String? note;
 
 /// Create a copy of ActiveExerciseEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -528,16 +532,16 @@ _$ActiveExerciseEntryCopyWith<_ActiveExerciseEntry> get copyWith => __$ActiveExe
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ActiveExerciseEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&const DeepCollectionEquality().equals(other._sets, _sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ActiveExerciseEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&const DeepCollectionEquality().equals(other._sets, _sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId)&&(identical(other.note, note) || other.note == note));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,exercise,weightType,const DeepCollectionEquality().hash(_sets),supersetGroupId);
+int get hashCode => Object.hash(runtimeType,id,exercise,weightType,const DeepCollectionEquality().hash(_sets),supersetGroupId,note);
 
 @override
 String toString() {
-  return 'ActiveExerciseEntry(id: $id, exercise: $exercise, weightType: $weightType, sets: $sets, supersetGroupId: $supersetGroupId)';
+  return 'ActiveExerciseEntry(id: $id, exercise: $exercise, weightType: $weightType, sets: $sets, supersetGroupId: $supersetGroupId, note: $note)';
 }
 
 
@@ -548,7 +552,7 @@ abstract mixin class _$ActiveExerciseEntryCopyWith<$Res> implements $ActiveExerc
   factory _$ActiveExerciseEntryCopyWith(_ActiveExerciseEntry value, $Res Function(_ActiveExerciseEntry) _then) = __$ActiveExerciseEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, Exercise exercise, String weightType, List<ActiveSetEntry> sets, String? supersetGroupId
+ String id, Exercise exercise, String weightType, List<ActiveSetEntry> sets, String? supersetGroupId, String? note
 });
 
 
@@ -565,13 +569,14 @@ class __$ActiveExerciseEntryCopyWithImpl<$Res>
 
 /// Create a copy of ActiveExerciseEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exercise = null,Object? weightType = null,Object? sets = null,Object? supersetGroupId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exercise = null,Object? weightType = null,Object? sets = null,Object? supersetGroupId = freezed,Object? note = freezed,}) {
   return _then(_ActiveExerciseEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exercise: null == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
 as Exercise,weightType: null == weightType ? _self.weightType : weightType // ignore: cast_nullable_to_non_nullable
 as String,sets: null == sets ? _self._sets : sets // ignore: cast_nullable_to_non_nullable
 as List<ActiveSetEntry>,supersetGroupId: freezed == supersetGroupId ? _self.supersetGroupId : supersetGroupId // ignore: cast_nullable_to_non_nullable
+as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

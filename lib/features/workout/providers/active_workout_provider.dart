@@ -108,6 +108,46 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     );
   }
 
+  /// Creates a new superset from the given exercise IDs (which must currently
+  /// be isolated, i.e. have no supersetGroupId). Requires at least 2 IDs.
+  void formSuperset(List<String> exerciseIds) {
+    final current = state;
+    if (current == null || exerciseIds.length < 2) return;
+    final groupId = _uuid.v4();
+    state = current.copyWith(
+      exercises: current.exercises
+          .map((e) => exerciseIds.contains(e.id)
+              ? e.copyWith(supersetGroupId: groupId)
+              : e)
+          .toList(),
+    );
+  }
+
+  /// Adds isolated exercises (by ID) to an existing superset group.
+  void addExercisesToSuperset(String groupId, List<String> exerciseIds) {
+    final current = state;
+    if (current == null || exerciseIds.isEmpty) return;
+    state = current.copyWith(
+      exercises: current.exercises
+          .map((e) => exerciseIds.contains(e.id)
+              ? e.copyWith(supersetGroupId: groupId)
+              : e)
+          .toList(),
+    );
+  }
+
+  /// Sets (or clears) the note for an exercise entry.
+  void setNote(String exerciseId, String? note) {
+    final current = state;
+    if (current == null) return;
+    state = current.copyWith(
+      exercises: current.exercises
+          .map((e) =>
+              e.id == exerciseId ? e.copyWith(note: note?.isEmpty == true ? null : note) : e)
+          .toList(),
+    );
+  }
+
   void removeFromSuperset(String exerciseId) {
     final current = state;
     if (current == null) return;
@@ -303,6 +343,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
             'position': i,
             if (entry.supersetGroupId != null)
               'superset_group_id': entry.supersetGroupId,
+            if (entry.note != null && entry.note!.isNotEmpty)
+              'note': entry.note,
           })
           .select('id')
           .single();

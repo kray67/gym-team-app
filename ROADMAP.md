@@ -374,6 +374,34 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_color text;
 
 ---
 
+## Next Session — Start Here
+
+**⚠️ Time-based exercise tracking** — planned but not yet implemented.
+See [`docs/time_tracking_planning.md`](docs/time_tracking_planning.md) for open questions
+that must be answered before coding starts. Answer the questions in that file first,
+then implement based on the agreed design.
+
+---
+
+## Phase 9 — UX Improvements ✅
+
+### SQL to apply in Supabase dashboard
+```sql
+-- Exercise note persisted per session exercise
+ALTER TABLE session_exercises ADD COLUMN IF NOT EXISTS note text;
+```
+
+### Done
+- **Edit/delete custom exercises in exercise picker** — own custom exercises show a `⋮` trailing button with Edit/Delete; Edit opens the existing `showExerciseFormSheet`; Delete shows confirm dialog then calls `CustomExercisesNotifier.delete()`
+- **Filter dropdowns in exercise picker** — replaced two scrollable chip rows with two compact inline `DropdownButtonFormField`s (Muscle / Equipment) side by side below the search bar
+- **Exercise list sorted alphabetically** — `_filtered()` applies `.sort((a,b) => a.name.compareTo(b.name))`; muscle group section headers removed entirely
+- **Exercise note in active workout** — "Add note" / "Edit note" in exercise `⋯` menu; note saved to `session_exercises.note` on finish; displayed in italic below muscle group label
+- **Create superset from within workout** — "Add to superset…" in isolated exercise options menu; opens `_SupersetPickerSheet` showing all isolated exercises with the initiating exercise pre-selected; requires ≥ 2 total selected; calls `ActiveWorkoutNotifier.formSuperset()`
+- **Add exercise to existing superset** — "Add exercise…" in superset header options menu; opens `_SupersetPickerSheet` for isolated exercises; calls `ActiveWorkoutNotifier.addExercisesToSuperset()`
+- **3-dot set options button** — replaced tappable set number column with explicit `⋮` icon (dots) + set number side by side; dots open the Work Set / Warm-up Set / Remove Set menu; set number is now plain text
+
+---
+
 ## Known Issues / Decisions
 - Project moved to `C:\Users\joao.dias\Desktop\flutter_projects\gym-team-app\gym_team` to avoid non-ASCII path (`João`) causing Gradle errors on Windows
 - `android/gradle.properties` has `android.overridePathCheck=true` — keep it in place
