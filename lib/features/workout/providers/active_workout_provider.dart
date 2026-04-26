@@ -109,31 +109,62 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
   }
 
   /// Creates a new superset from the given exercise IDs (which must currently
-  /// be isolated, i.e. have no supersetGroupId). Requires at least 2 IDs.
+  /// be isolated). Requires at least 2 IDs. All selected exercises are moved
+  /// together (consecutive) at the position of the first selected exercise.
   void formSuperset(List<String> exerciseIds) {
     final current = state;
     if (current == null || exerciseIds.length < 2) return;
     final groupId = _uuid.v4();
-    state = current.copyWith(
-      exercises: current.exercises
-          .map((e) => exerciseIds.contains(e.id)
-              ? e.copyWith(supersetGroupId: groupId)
-              : e)
-          .toList(),
-    );
+
+    // Tag selected exercises with the new groupId.
+    final tagged = current.exercises
+        .map((e) => exerciseIds.contains(e.id)
+            ? e.copyWith(supersetGroupId: groupId)
+            : e)
+        .toList();
+
+    // Find position of the first selected exercise; move all selected there.
+    final firstPos =
+        tagged.indexWhere((e) => exerciseIds.contains(e.id));
+    final selected =
+        tagged.where((e) => exerciseIds.contains(e.id)).toList();
+    final rest =
+        tagged.where((e) => !exerciseIds.contains(e.id)).toList();
+    rest.insertAll(firstPos.clamp(0, rest.length), selected);
+
+    state = current.copyWith(exercises: rest);
   }
 
   /// Adds isolated exercises (by ID) to an existing superset group.
+  /// Moves the newly added exercises next to the existing group members
+  /// so they are consecutive in the list.
   void addExercisesToSuperset(String groupId, List<String> exerciseIds) {
     final current = state;
     if (current == null || exerciseIds.isEmpty) return;
-    state = current.copyWith(
-      exercises: current.exercises
-          .map((e) => exerciseIds.contains(e.id)
-              ? e.copyWith(supersetGroupId: groupId)
-              : e)
-          .toList(),
-    );
+
+    // Tag selected exercises with the existing groupId.
+    final tagged = current.exercises
+        .map((e) => exerciseIds.contains(e.id)
+            ? e.copyWith(supersetGroupId: groupId)
+            : e)
+        .toList();
+
+    // Separate: exercises already in this group (original members) vs new ones.
+    final originalMembers =
+        tagged.where((e) => e.supersetGroupId == groupId && !exerciseIds.contains(e.id)).toList();
+    final newMembers =
+        tagged.where((e) => exerciseIds.contains(e.id)).toList();
+
+    // Build final list: non-new exercises in order, new members inserted
+    // right after the last original group member.
+    final rest = tagged.where((e) => !exerciseIds.contains(e.id)).toList();
+    final insertAtRest = originalMembers.isNotEmpty
+        ? rest.indexWhere((e) => e == originalMembers.last)
+        : -1;
+    final pos = insertAtRest == -1 ? rest.length : insertAtRest + 1;
+    rest.insertAll(pos, newMembers);
+
+    state = current.copyWith(exercises: rest);
   }
 
   /// Sets (or clears) the note for an exercise entry.

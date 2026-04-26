@@ -338,6 +338,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                                 if (isOwnCustom) ...[
                                   const SizedBox(width: 4),
                                   PopupMenuButton<String>(
+                                    padding: EdgeInsets.zero,
                                     icon: const Icon(Icons.more_vert,
                                         size: 18, color: Colors.white38),
                                     onSelected: (v) async {
