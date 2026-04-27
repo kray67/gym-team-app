@@ -69,10 +69,12 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
       Exercise exercise, int weekNumber, int sessionNumber) {
     final s = state;
     if (s == null) return;
+    final isTimeBased = const ['time', 'weight_time', 'distance_time']
+        .contains(exercise.trackingType);
     final entry = PlanEditorExercise(
       id: _uuid.v4(),
       exercise: exercise,
-      goalType: 'reps',
+      goalType: isTimeBased ? 'time' : 'reps',
       weightType: 'percent_1rm',
       weekNumber: weekNumber,
       sessionNumber: sessionNumber,
@@ -245,7 +247,10 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
         .map((ex) => PlanEditorExercise(
               id: _uuid.v4(),
               exercise: ex,
-              goalType: 'reps',
+              goalType: const ['time', 'weight_time', 'distance_time']
+                      .contains(ex.trackingType)
+                  ? 'time'
+                  : 'reps',
               weightType: 'percent_1rm',
               weekNumber: weekNumber,
               sessionNumber: sessionNumber,
