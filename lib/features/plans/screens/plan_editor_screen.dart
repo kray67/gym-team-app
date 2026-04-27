@@ -12,7 +12,6 @@ const _equipmentOptions = [
   'commercial_gym'
 ];
 const _equipmentLabels = ['Bodyweight', 'Dumbbells', 'Garage Gym', 'Commercial Gym'];
-const _durationOptions = [30, 45, 60, 75, 90];
 
 /// Step 1 of the plan creation/editing flow.
 /// Collects plan metadata; exercises are configured in PlanSessionBuilderScreen.
@@ -26,6 +25,7 @@ class PlanEditorScreen extends ConsumerStatefulWidget {
 class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
   late final TextEditingController _titleCtrl;
   late final TextEditingController _descCtrl;
+  late final TextEditingController _durationCtrl;
 
   @override
   void initState() {
@@ -33,12 +33,15 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
     final s = ref.read(planEditorNotifierProvider);
     _titleCtrl = TextEditingController(text: s?.title ?? '');
     _descCtrl = TextEditingController(text: s?.description ?? '');
+    _durationCtrl = TextEditingController(
+        text: s?.avgDurationMins != null ? '${s!.avgDurationMins}' : '');
   }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
+    _durationCtrl.dispose();
     super.dispose();
   }
 
@@ -166,96 +169,77 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
             ),
 
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Avg Duration',
-                      isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    child: DropdownButton<int>(
-                      value: s.avgDurationMins,
-                      isExpanded: true,
-                      underline: const SizedBox(),
-                      isDense: true,
-                      items: _durationOptions
-                          .map((d) => DropdownMenuItem(
-                              value: d, child: Text('$d min')))
-                          .toList(),
-                      onChanged: (v) {
-                        if (v != null) {
-                          ref
-                              .read(planEditorNotifierProvider.notifier)
-                              .setAvgDurationMins(v);
-                        }
-                      },
-                    ),
-                  ),
+            TextField(
+              controller: _durationCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Avg Duration (minutes)',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (v) {
+                final parsed = int.tryParse(v);
+                if (parsed != null && parsed > 0) {
+                  ref
+                      .read(planEditorNotifierProvider.notifier)
+                      .setAvgDurationMins(parsed);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Difficulty',
+                isDense: true,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: DropdownButton<String>(
+                value: s.difficulty,
+                isExpanded: true,
+                underline: const SizedBox(),
+                isDense: true,
+                items: List.generate(
+                  _difficultyOptions.length,
+                  (i) => DropdownMenuItem(
+                      value: _difficultyOptions[i],
+                      child: Text(_difficultyLabels[i])),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Difficulty',
-                      isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    child: DropdownButton<String>(
-                      value: s.difficulty,
-                      isExpanded: true,
-                      underline: const SizedBox(),
-                      isDense: true,
-                      items: List.generate(
-                        _difficultyOptions.length,
-                        (i) => DropdownMenuItem(
-                            value: _difficultyOptions[i],
-                            child: Text(_difficultyLabels[i])),
-                      ),
-                      onChanged: (v) {
-                        if (v != null) {
-                          ref
-                              .read(planEditorNotifierProvider.notifier)
-                              .setDifficulty(v);
-                        }
-                      },
-                    ),
-                  ),
+                onChanged: (v) {
+                  if (v != null) {
+                    ref
+                        .read(planEditorNotifierProvider.notifier)
+                        .setDifficulty(v);
+                  }
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Equipment',
+                isDense: true,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: DropdownButton<String>(
+                value: s.equipment,
+                isExpanded: true,
+                underline: const SizedBox(),
+                isDense: true,
+                items: List.generate(
+                  _equipmentOptions.length,
+                  (i) => DropdownMenuItem(
+                      value: _equipmentOptions[i],
+                      child: Text(_equipmentLabels[i])),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Equipment',
-                      isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    child: DropdownButton<String>(
-                      value: s.equipment,
-                      isExpanded: true,
-                      underline: const SizedBox(),
-                      isDense: true,
-                      items: List.generate(
-                        _equipmentOptions.length,
-                        (i) => DropdownMenuItem(
-                            value: _equipmentOptions[i],
-                            child: Text(_equipmentLabels[i])),
-                      ),
-                      onChanged: (v) {
-                        if (v != null) {
-                          ref
-                              .read(planEditorNotifierProvider.notifier)
-                              .setEquipment(v);
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ],
+                onChanged: (v) {
+                  if (v != null) {
+                    ref
+                        .read(planEditorNotifierProvider.notifier)
+                        .setEquipment(v);
+                  }
+                },
+              ),
             ),
 
             const SizedBox(height: 32),
