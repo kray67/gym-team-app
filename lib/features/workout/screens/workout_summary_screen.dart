@@ -46,20 +46,46 @@ class _WorkoutSummaryScreenState extends ConsumerState<WorkoutSummaryScreen> {
   SessionSet? _bestSet(SessionExercise entry) {
     final completed = entry.sets.where((s) => s.completed).toList();
     if (completed.isEmpty) return null;
-    return completed.reduce(
-        (a, b) => (a.weightKg ?? 0) >= (b.weightKg ?? 0) ? a : b);
+    final t = entry.exercise?.trackingType ?? 'weight_reps';
+    if (t == 'time' || t == 'weight_time') {
+      return completed.reduce((a, b) => (a.durationSecs ?? 0) >= (b.durationSecs ?? 0) ? a : b);
+    }
+    if (t == 'distance_time') {
+      return completed.reduce((a, b) => (a.distanceM ?? 0) >= (b.distanceM ?? 0) ? a : b);
+    }
+    if (t == 'reps_only') {
+      return completed.reduce((a, b) => (a.reps ?? 0) >= (b.reps ?? 0) ? a : b);
+    }
+    return completed.reduce((a, b) => (a.weightKg ?? 0) >= (b.weightKg ?? 0) ? a : b);
   }
 
   String _bestSetStr(SessionExercise entry) {
     final best = _bestSet(entry);
     if (best == null) return '—';
-    final repsStr = best.reps != null ? '${best.reps}' : 'AMRAP';
-    if (best.weightKg != null && best.weightKg! > 0) {
-      final w = best.weightKg!;
-      final wStr = w % 1 == 0 ? '${w.toInt()} kg' : '${w.toStringAsFixed(1)} kg';
-      return '$wStr × $repsStr';
+    final t = entry.exercise?.trackingType ?? 'weight_reps';
+    switch (t) {
+      case 'reps_only':
+        return best.reps != null ? '${best.reps} reps' : '—';
+      case 'time':
+        return formatDuration(best.durationSecs);
+      case 'weight_time':
+        final w = best.weightKg;
+        final wStr = w != null ? (w % 1 == 0 ? '${w.toInt()} kg' : '${w.toStringAsFixed(1)} kg') : null;
+        final tStr = formatDuration(best.durationSecs);
+        return wStr != null ? '$wStr — $tStr' : tStr;
+      case 'distance_time':
+        final km = best.distanceM != null ? '${(best.distanceM! / 1000).toStringAsFixed(2)} km' : null;
+        final tStr = formatDuration(best.durationSecs);
+        return km != null ? '$km — $tStr' : tStr;
+      default: // weight_reps
+        final repsStr = best.reps != null ? '${best.reps}' : 'AMRAP';
+        if (best.weightKg != null && best.weightKg! > 0) {
+          final w = best.weightKg!;
+          final wStr = w % 1 == 0 ? '${w.toInt()} kg' : '${w.toStringAsFixed(1)} kg';
+          return '$wStr × $repsStr';
+        }
+        return repsStr;
     }
-    return repsStr;
   }
 
   String _formatWeight(double kg) {

@@ -318,7 +318,42 @@ class _ExerciseDetail extends ConsumerWidget {
         ref.watch(sessionPrSetIdsProvider(sessionId)).valueOrNull ?? {};
     final name = entry.exercise?.name ?? 'Unknown exercise';
     final muscleGroup = entry.exercise?.muscleGroup ?? '';
+    final trackingType = entry.exercise?.trackingType ?? 'weight_reps';
     final completedSets = entry.sets.where((s) => s.completed).length;
+
+    List<Widget> headerCols;
+    switch (trackingType) {
+      case 'reps_only':
+        headerCols = const [
+          Expanded(child: Text('REPS', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center)),
+        ];
+        break;
+      case 'time':
+        headerCols = const [
+          Expanded(child: Text('TIME', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center)),
+        ];
+        break;
+      case 'weight_time':
+        headerCols = const [
+          Expanded(child: Text('KG', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center)),
+          SizedBox(width: 8),
+          Expanded(child: Text('TIME', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center)),
+        ];
+        break;
+      case 'distance_time':
+        headerCols = const [
+          Expanded(child: Text('KM', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center)),
+          SizedBox(width: 8),
+          Expanded(child: Text('TIME', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center)),
+        ];
+        break;
+      default: // weight_reps
+        headerCols = const [
+          Expanded(child: Text('KG', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center)),
+          SizedBox(width: 8),
+          Expanded(child: Text('REPS', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center)),
+        ];
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -352,27 +387,19 @@ class _ExerciseDetail extends ConsumerWidget {
             ),
             if (entry.sets.isNotEmpty) ...[
               const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Row(
                   children: [
-                    SizedBox(
+                    const SizedBox(
                         width: 36,
                         child: Text('SET',
                             style: TextStyle(fontSize: 11, color: Colors.grey),
                             textAlign: TextAlign.center)),
-                    SizedBox(width: 8),
-                    Expanded(
-                        child: Text('KG',
-                            style: TextStyle(fontSize: 11, color: Colors.grey),
-                            textAlign: TextAlign.center)),
-                    SizedBox(width: 8),
-                    Expanded(
-                        child: Text('REPS',
-                            style: TextStyle(fontSize: 11, color: Colors.grey),
-                            textAlign: TextAlign.center)),
-                    SizedBox(width: 8),
-                    SizedBox(
+                    const SizedBox(width: 8),
+                    ...headerCols,
+                    const SizedBox(width: 8),
+                    const SizedBox(
                         width: 36,
                         child: Text('✓',
                             style: TextStyle(fontSize: 11, color: Colors.grey),
@@ -383,6 +410,7 @@ class _ExerciseDetail extends ConsumerWidget {
               const Divider(height: 8),
               ...entry.sets.map((s) => _SetRow(
                     set: s,
+                    trackingType: trackingType,
                     isPr: prSetIds.contains(s.id),
                   )),
             ],
@@ -395,18 +423,51 @@ class _ExerciseDetail extends ConsumerWidget {
 
 class _SetRow extends StatelessWidget {
   final SessionSet set;
+  final String trackingType;
   final bool isPr;
-  const _SetRow({required this.set, this.isPr = false});
+  const _SetRow({required this.set, this.trackingType = 'weight_reps', this.isPr = false});
 
-  @override
-  Widget build(BuildContext context) {
-    final weight = set.weightKg != null
+  List<Widget> _valueCols() {
+    final kg = set.weightKg != null
         ? (set.weightKg! % 1 == 0
             ? set.weightKg!.toInt().toString()
             : set.weightKg!.toStringAsFixed(1))
         : '--';
     final reps = set.reps?.toString() ?? '--';
+    final time = formatDuration(set.durationSecs);
+    final km = set.distanceM != null
+        ? (set.distanceM! / 1000).toStringAsFixed(2)
+        : '--';
 
+    const style = TextStyle(fontSize: 14);
+    switch (trackingType) {
+      case 'reps_only':
+        return [Expanded(child: Text(reps, textAlign: TextAlign.center, style: style))];
+      case 'time':
+        return [Expanded(child: Text(time, textAlign: TextAlign.center, style: style))];
+      case 'weight_time':
+        return [
+          Expanded(child: Text(kg, textAlign: TextAlign.center, style: style)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(time, textAlign: TextAlign.center, style: style)),
+        ];
+      case 'distance_time':
+        return [
+          Expanded(child: Text(km, textAlign: TextAlign.center, style: style)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(time, textAlign: TextAlign.center, style: style)),
+        ];
+      default: // weight_reps
+        return [
+          Expanded(child: Text(kg, textAlign: TextAlign.center, style: style)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(reps, textAlign: TextAlign.center, style: style)),
+        ];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -436,15 +497,7 @@ class _SetRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
-                  child: Text(weight,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14))),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: Text(reps,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14))),
+              ..._valueCols(),
               const SizedBox(width: 8),
               SizedBox(
                 width: 36,

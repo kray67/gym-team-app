@@ -1011,9 +1011,11 @@ class _SetRowState extends ConsumerState<_SetRow> {
 
   static String _fmtDuration(int? secs) {
     if (secs == null) return '';
-    final m = secs ~/ 60;
-    final s = secs % 60;
-    return '$m:${s.toString().padLeft(2, '0')}';
+    final d = Duration(seconds: secs);
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return h > 0 ? '$h:$m:$s' : '${d.inMinutes.remainder(60)}:$s';
   }
 
   static int? _parseDuration(String text) {
@@ -1024,6 +1026,11 @@ class _SetRowState extends ConsumerState<_SetRow> {
         final m = int.tryParse(parts[0]);
         final s = int.tryParse(parts[1]);
         if (m != null && s != null) return m * 60 + s;
+      } else if (parts.length == 3) {
+        final h = int.tryParse(parts[0]);
+        final m = int.tryParse(parts[1]);
+        final s = int.tryParse(parts[2]);
+        if (h != null && m != null && s != null) return h * 3600 + m * 60 + s;
       }
       return null;
     }
