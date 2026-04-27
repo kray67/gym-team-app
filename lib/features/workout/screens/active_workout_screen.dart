@@ -946,17 +946,17 @@ class _TableHeader extends StatelessWidget {
         return [
           SizedBox(width: colW, child: const Text('KG', style: _style, textAlign: TextAlign.center)),
           const SizedBox(width: 6),
-          SizedBox(width: colW, child: const Tooltip(message: _kTimeTooltip, child: Text('TIME', style: _style, textAlign: TextAlign.center))),
+          _TimeHeaderLabel(colW: colW),
         ];
       case 'time':
         return [
-          SizedBox(width: colW, child: const Tooltip(message: _kTimeTooltip, child: Text('TIME', style: _style, textAlign: TextAlign.center))),
+          _TimeHeaderLabel(colW: colW),
         ];
       case 'distance_time':
         return [
           SizedBox(width: colW, child: const Text('KM', style: _style, textAlign: TextAlign.center)),
           const SizedBox(width: 6),
-          SizedBox(width: colW, child: const Tooltip(message: _kTimeTooltip, child: Text('TIME', style: _style, textAlign: TextAlign.center))),
+          _TimeHeaderLabel(colW: colW),
         ];
       default: // weight_reps
         return [
@@ -1471,6 +1471,33 @@ class _NumField extends StatelessWidget {
         fillColor: Colors.white.withValues(alpha: 0.05),
       ),
       onChanged: onChanged,
+    );
+  }
+}
+
+// ── TIME column header label with info icon ───────────────────────────────────
+
+class _TimeHeaderLabel extends StatelessWidget {
+  final double colW;
+  const _TimeHeaderLabel({required this.colW});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: colW,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('TIME', style: TextStyle(fontSize: 11, color: Colors.grey)),
+          const SizedBox(width: 2),
+          Tooltip(
+            message: _kTimeTooltip,
+            triggerMode: TooltipTriggerMode.tap,
+            child: const Icon(Icons.info_outline, size: 10, color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1005,7 +1005,19 @@ class _PlanTableHeader extends StatelessWidget {
           if (goalType == 'time') ...[
             SizedBox(
               width: _kInputW * 1.5,
-              child: const Tooltip(message: _kTimeTooltip, child: Text('TIME', style: _style, textAlign: TextAlign.center)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('TIME', style: _style),
+                  const SizedBox(width: 2),
+                  Tooltip(
+                    message: _kTimeTooltip,
+                    triggerMode: TooltipTriggerMode.tap,
+                    child: const Icon(Icons.info_outline, size: 10, color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(width: 6),
           ] else if (goalType == 'reps') ...[
