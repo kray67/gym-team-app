@@ -147,7 +147,7 @@
 
 ### Post-5B Plan/Workout Improvements ✅
 
-#### New SQL (apply in Supabase dashboard before building)
+### SQL applied ✅
 ```sql
 -- Active plan on profile
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS active_plan_id uuid REFERENCES workout_plans(id) ON DELETE SET NULL;
@@ -210,7 +210,7 @@ CREATE POLICY "Users manage own progress" ON public.user_plan_progress
 
 #### 5C — Personal records (PRs) ✅
 
-##### SQL to apply in Supabase dashboard
+### SQL applied ✅
 ```sql
 CREATE TABLE IF NOT EXISTS exercise_records (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -255,7 +255,7 @@ CREATE POLICY "Users manage own records" ON exercise_records
 
 ### Post-5C PR & UX fixes ✅
 
-#### SQL to apply
+### SQL applied ✅
 ```sql
 -- Remove max_reps records (record type was removed from the app)
 DELETE FROM exercise_records WHERE record_type = 'max_reps';
@@ -374,18 +374,9 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_color text;
 
 ---
 
-## Next Session — Start Here
-
-**⚠️ Time-based exercise tracking** — planned but not yet implemented.
-See [`docs/time_tracking_planning.md`](docs/time_tracking_planning.md) for open questions
-that must be answered before coding starts. Answer the questions in that file first,
-then implement based on the agreed design.
-
----
-
 ## Phase 9 — UX Improvements ✅
 
-### SQL to apply in Supabase dashboard
+### SQL applied ✅
 ```sql
 -- Exercise note persisted per session exercise
 ALTER TABLE session_exercises ADD COLUMN IF NOT EXISTS note text;
@@ -399,6 +390,51 @@ ALTER TABLE session_exercises ADD COLUMN IF NOT EXISTS note text;
 - **Create superset from within workout** — "Add to superset…" in isolated exercise options menu; opens `_SupersetPickerSheet` showing all isolated exercises with the initiating exercise pre-selected; requires ≥ 2 total selected; calls `ActiveWorkoutNotifier.formSuperset()`
 - **Add exercise to existing superset** — "Add exercise…" in superset header options menu; opens `_SupersetPickerSheet` for isolated exercises; calls `ActiveWorkoutNotifier.addExercisesToSuperset()`
 - **3-dot set options button** — replaced tappable set number column with explicit `⋮` icon (dots) + set number side by side; dots open the Work Set / Warm-up Set / Remove Set menu; set number is now plain text
+
+---
+
+## Phase 10 — Time-Based Exercise Tracking ✅
+
+**Goal:** Support exercises tracked by time and/or distance, not just weight × reps
+
+### SQL applied ✅
+```sql
+-- Add tracking type to exercise catalog
+ALTER TABLE exercises ADD COLUMN IF NOT EXISTS tracking_type text NOT NULL DEFAULT 'weight_reps';
+
+-- Add duration target to plan sets
+ALTER TABLE plan_exercise_sets ADD COLUMN IF NOT EXISTS target_duration_secs int;
+
+-- Tag existing exercises by type (see seed_exercises.sql comments for full list)
+UPDATE exercises SET tracking_type = 'time' WHERE name IN ('Plank', 'Side Plank', 'Wall Sit', 'Dead Hang', ...);
+UPDATE exercises SET tracking_type = 'distance_time' WHERE name IN ('Run', '500m Row', 'Cycling', ...);
+UPDATE exercises SET tracking_type = 'weight_time' WHERE name IN ('Farmer''s Walk (Weighted)', 'Suitcase Carry', ...);
+UPDATE exercises SET tracking_type = 'reps_only' WHERE name IN ('Push Up', 'Burpee', 'Box Jump', ...);
+-- Full UPDATE SQL generated in session — apply from the message in chat history
+```
+
+### Done
+- [x] `Exercise.trackingType` field added (`@Default('weight_reps')`); codegen run
+- [x] `ActiveSetEntry.durationSecs` and `ActiveSetEntry.distanceM` fields added; codegen run
+- [x] `ActiveWorkoutNotifier`: `updateSet`/`addSet`/`finishWorkout` handle new fields; `_buildTargetText()` handles `time` goal type
+- [x] `ActiveWorkoutScreen` `_SetRow` renders per-tracking-type input columns (KG+Reps, Reps, KG+Time, Time, Km+Time); `_canComplete()` generalized; `_TimeField` widget added
+- [x] `PlanEditorSet.targetDurationSecs` + `PlanExerciseSet.targetDurationSecs` added; codegen run
+- [x] `PlanEditorNotifier`: `updatePlanSet`/`addSet`/`savePlan` handle `targetDurationSecs`
+- [x] Plan session builder: `time` goal type button; MM:SS input per set; intensity selector hidden when goal is `time`; `_PlanTimeField` widget added
+- [x] `exercise_form_sheet.dart`: tracking type dropdown added
+- [x] `CustomExercisesNotifier`: `create`/`updateExercise` accept + persist `trackingType`
+- [x] Exercise picker UX: ⋮/⊕ button order fixed (add always rightmost); label "Muscle" → "Muscle Group"; custom exercises sort before catalog entries
+- [x] Web build rebuilt + pushed to Vercel
+
+### Post-Phase 10 UX Fixes ✅
+- [x] **Plan editor Difficulty/Equipment**: replaced `SegmentedButton`/`ChoiceChip` with `InputDecorator` + `DropdownButton` (reactive, no `value:` deprecation)
+- [x] **Plan session builder Goal/Intensity**: replaced `SegmentedButton`/`ChoiceChip` with `InputDecorator` + `DropdownButton` (reactive); Intensity hidden when Goal = Time
+- [x] **Duplicate drag handle on web**: `buildDefaultDragHandles: false` added to all 4 `ReorderableListView`s (active workout + plan session builder, both outer and inner/superset lists)
+- [x] **Workout summary AMRAP/time bug**: `_bestSet()` picks by correct field per tracking type; `_bestSetStr()` renders per-type string
+- [x] **Workout detail wrong columns**: `_ExerciseDetail` reads `trackingType`; headers + `_SetRow._valueCols()` render correct columns per type
+- [x] **Time input improvements**: HH:MM:SS support; auto-reformat on blur; tappable ℹ icon tooltip on TIME label explaining accepted formats
+- [x] **Plan session builder Confirm button**: fixed for time-based exercises (`hasConfiguredSet` now checks `targetDurationSecs != null`)
+- [x] Web build rebuilt + pushed to Vercel
 
 ---
 
