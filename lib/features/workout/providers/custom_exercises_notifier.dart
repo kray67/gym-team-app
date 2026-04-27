@@ -13,6 +13,7 @@ class CustomExercisesNotifier extends _$CustomExercisesNotifier {
     required String name,
     required String category,
     required String muscleGroup,
+    String trackingType = 'weight_reps',
   }) async {
     final userId = supabase.auth.currentUser!.id;
     await supabase.from('exercises').insert({
@@ -21,6 +22,7 @@ class CustomExercisesNotifier extends _$CustomExercisesNotifier {
       'muscle_group': muscleGroup,
       'is_custom': true,
       'created_by': userId,
+      'tracking_type': trackingType,
     });
     ref.invalidate(exercisesProvider);
   }
@@ -30,11 +32,13 @@ class CustomExercisesNotifier extends _$CustomExercisesNotifier {
     required String name,
     required String category,
     required String muscleGroup,
+    String trackingType = 'weight_reps',
   }) async {
     await supabase.from('exercises').update({
       'name': name,
       'category': category,
       'muscle_group': muscleGroup,
+      'tracking_type': trackingType,
     }).eq('id', id).eq('created_by', supabase.auth.currentUser!.id);
     ref.invalidate(exercisesProvider);
   }

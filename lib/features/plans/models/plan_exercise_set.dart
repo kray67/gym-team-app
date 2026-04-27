@@ -16,6 +16,7 @@ abstract class PlanExerciseSet with _$PlanExerciseSet {
     @JsonKey(name: 'target_rpe_max') double? targetRpeMax,
     @JsonKey(name: 'is_warmup') @Default(false) bool isWarmup,
     @JsonKey(name: 'weight_increment') double? weightIncrement,
+    @JsonKey(name: 'target_duration_secs') int? targetDurationSecs,
   }) = _PlanExerciseSet;
 
   factory PlanExerciseSet.fromJson(Map<String, dynamic> json) =>

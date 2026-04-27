@@ -851,7 +851,7 @@ class _ExerciseCard extends ConsumerWidget {
               const SizedBox(height: 10),
 
               // ── Column headers ────────────────────────────────────────────
-              _TableHeader(showRpe: _showRpe, showTarget: showTarget),
+              _TableHeader(showRpe: _showRpe, showTarget: showTarget, trackingType: entry.exercise.trackingType),
               const Divider(height: 8),
 
               // ── Set rows ──────────────────────────────────────────────────
@@ -863,6 +863,7 @@ class _ExerciseCard extends ConsumerWidget {
                     showRpe: _showRpe,
                     showTarget: showTarget,
                     isPr: prSetIds.contains(set.id),
+                    trackingType: entry.exercise.trackingType,
                   )),
 
               // ── Footer ────────────────────────────────────────────────────
@@ -893,36 +894,60 @@ class _ExerciseCard extends ConsumerWidget {
 class _TableHeader extends StatelessWidget {
   final bool showRpe;
   final bool showTarget;
-  const _TableHeader({required this.showRpe, required this.showTarget});
+  final String trackingType;
+  const _TableHeader({
+    required this.showRpe,
+    required this.showTarget,
+    required this.trackingType,
+  });
 
   static const _style = TextStyle(fontSize: 11, color: Colors.grey);
+
+  List<Widget> _inputCols(double colW) {
+    switch (trackingType) {
+      case 'reps_only':
+        return [
+          SizedBox(width: colW, child: const Text('REPS', style: _style, textAlign: TextAlign.center)),
+        ];
+      case 'weight_time':
+        return [
+          SizedBox(width: colW, child: const Text('KG', style: _style, textAlign: TextAlign.center)),
+          const SizedBox(width: 6),
+          SizedBox(width: colW, child: const Text('TIME', style: _style, textAlign: TextAlign.center)),
+        ];
+      case 'time':
+        return [
+          SizedBox(width: colW, child: const Text('TIME', style: _style, textAlign: TextAlign.center)),
+        ];
+      case 'distance_time':
+        return [
+          SizedBox(width: colW, child: const Text('KM', style: _style, textAlign: TextAlign.center)),
+          const SizedBox(width: 6),
+          SizedBox(width: colW, child: const Text('TIME', style: _style, textAlign: TextAlign.center)),
+        ];
+      default: // weight_reps
+        return [
+          SizedBox(width: colW, child: const Text('KG', style: _style, textAlign: TextAlign.center)),
+          const SizedBox(width: 6),
+          SizedBox(width: colW, child: const Text('REPS', style: _style, textAlign: TextAlign.center)),
+        ];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     if (showTarget) {
-      // Plan-based layout: SET · PREV · TARGET(flex) · KG · REPS · CHECK
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Row(
           children: [
-            SizedBox(
-                width: _kSetW,
-                child: const Text('SET', style: _style, textAlign: TextAlign.center)),
+            SizedBox(width: _kSetW, child: const Text('SET', style: _style, textAlign: TextAlign.center)),
             const SizedBox(width: 4),
-            SizedBox(
-                width: _kPrevWPlan,
-                child: const Text('PREV', style: _style)),
+            SizedBox(width: _kPrevWPlan, child: const Text('PREV', style: _style)),
             const SizedBox(width: 4),
-            const Expanded(
-                child: Text('TARGET', style: _style, textAlign: TextAlign.center)),
+            const Expanded(child: Text('TARGET', style: _style, textAlign: TextAlign.center)),
             const SizedBox(width: 4),
-            SizedBox(
-                width: _kKgWPlan,
-                child: const Text('KG', style: _style, textAlign: TextAlign.center)),
-            const SizedBox(width: 6),
-            SizedBox(
-                width: _kRepsWPlan,
-                child: const Text('REPS', style: _style, textAlign: TextAlign.center)),
+            ..._inputCols(_kKgWPlan),
             const SizedBox(width: 6),
             SizedBox(width: _kCheckW),
           ],
@@ -930,31 +955,18 @@ class _TableHeader extends StatelessWidget {
       );
     }
 
-    // Free-workout layout: SET · PREVIOUS · spacer · KG · REPS · [RPE] · CHECK
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Row(
         children: [
-          SizedBox(
-              width: _kSetW,
-              child: const Text('SET', style: _style, textAlign: TextAlign.center)),
+          SizedBox(width: _kSetW, child: const Text('SET', style: _style, textAlign: TextAlign.center)),
           const SizedBox(width: 8),
-          SizedBox(
-              width: _kPrevW,
-              child: const Text('PREVIOUS', style: _style)),
+          SizedBox(width: _kPrevW, child: const Text('PREVIOUS', style: _style)),
           const Spacer(),
-          SizedBox(
-              width: _kInputW,
-              child: const Text('KG', style: _style, textAlign: TextAlign.center)),
-          const SizedBox(width: 6),
-          SizedBox(
-              width: _kInputW,
-              child: const Text('REPS', style: _style, textAlign: TextAlign.center)),
-          if (showRpe) ...[
+          ..._inputCols(_kInputW),
+          if (showRpe && trackingType == 'weight_reps') ...[
             const SizedBox(width: 6),
-            SizedBox(
-                width: _kInputW,
-                child: const Text('RPE', style: _style, textAlign: TextAlign.center)),
+            SizedBox(width: _kInputW, child: const Text('RPE', style: _style, textAlign: TextAlign.center)),
           ],
           const SizedBox(width: 6),
           SizedBox(width: _kCheckW),
@@ -973,6 +985,7 @@ class _SetRow extends ConsumerStatefulWidget {
   final bool showRpe;
   final bool showTarget;
   final bool isPr;
+  final String trackingType;
 
   const _SetRow({
     super.key,
@@ -982,6 +995,7 @@ class _SetRow extends ConsumerStatefulWidget {
     required this.showRpe,
     required this.showTarget,
     required this.isPr,
+    required this.trackingType,
   });
 
   @override
@@ -992,6 +1006,29 @@ class _SetRowState extends ConsumerState<_SetRow> {
   late final TextEditingController _weightCtrl;
   late final TextEditingController _repsCtrl;
   late final TextEditingController _rpeCtrl;
+  late final TextEditingController _durationCtrl;
+  late final TextEditingController _distanceCtrl;
+
+  static String _fmtDuration(int? secs) {
+    if (secs == null) return '';
+    final m = secs ~/ 60;
+    final s = secs % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  static int? _parseDuration(String text) {
+    if (text.isEmpty) return null;
+    if (text.contains(':')) {
+      final parts = text.split(':');
+      if (parts.length == 2) {
+        final m = int.tryParse(parts[0]);
+        final s = int.tryParse(parts[1]);
+        if (m != null && s != null) return m * 60 + s;
+      }
+      return null;
+    }
+    return int.tryParse(text);
+  }
 
   Future<void> _showSetMenu() async {
     final set = widget.set;
@@ -1063,11 +1100,15 @@ class _SetRowState extends ConsumerState<_SetRow> {
         text: s.weightKg != null
             ? s.weightKg!.toStringAsFixed(s.weightKg! % 1 == 0 ? 0 : 1)
             : '');
-    _repsCtrl =
-        TextEditingController(text: s.reps?.toString() ?? '');
+    _repsCtrl = TextEditingController(text: s.reps?.toString() ?? '');
     _rpeCtrl = TextEditingController(
         text: s.rpe != null
             ? s.rpe!.toStringAsFixed(s.rpe! % 1 == 0 ? 0 : 1)
+            : '');
+    _durationCtrl = TextEditingController(text: _fmtDuration(s.durationSecs));
+    _distanceCtrl = TextEditingController(
+        text: s.distanceM != null
+            ? (s.distanceM! / 1000).toStringAsFixed(2)
             : '');
   }
 
@@ -1076,6 +1117,8 @@ class _SetRowState extends ConsumerState<_SetRow> {
     _weightCtrl.dispose();
     _repsCtrl.dispose();
     _rpeCtrl.dispose();
+    _durationCtrl.dispose();
+    _distanceCtrl.dispose();
     super.dispose();
   }
 
@@ -1084,6 +1127,8 @@ class _SetRowState extends ConsumerState<_SetRow> {
     final notifier = ref.read(activeWorkoutNotifierProvider.notifier);
     final set = widget.set;
     final completed = set.completed;
+
+    final canComplete = _canComplete(set);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -1101,9 +1146,7 @@ class _SetRowState extends ConsumerState<_SetRow> {
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
         child: Row(
           children: [
-            // ── Plan-mode TARGET column layout ────────────────────────────
             if (widget.showTarget) ...[
-              // 3-dot button + set number
               _SetMenuCell(set: set, onTap: _showSetMenu),
               const SizedBox(width: 4),
               SizedBox(
@@ -1120,11 +1163,7 @@ class _SetRowState extends ConsumerState<_SetRow> {
                 child: widget.set.targetText != null
                     ? Text(
                         widget.set.targetText!,
-                        style: TextStyle(
-                          color: Colors.white60,
-                          fontSize: 11,
-                          height: 1.3,
-                        ),
+                        style: const TextStyle(color: Colors.white60, fontSize: 11, height: 1.3),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         textAlign: TextAlign.center,
@@ -1132,129 +1171,54 @@ class _SetRowState extends ConsumerState<_SetRow> {
                     : const SizedBox.shrink(),
               ),
               const SizedBox(width: 4),
-              SizedBox(
-                width: _kKgWPlan,
-                child: _NumField(
-                  controller: _weightCtrl,
-                  hint: '0',
-                  decimal: true,
-                  completed: completed,
-                  onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id,
-                      weightKg: double.tryParse(v)),
-                ),
-              ),
-              const SizedBox(width: 6),
-              SizedBox(
-                width: _kRepsWPlan,
-                child: _NumField(
-                  controller: _repsCtrl,
-                  hint: '0',
-                  decimal: false,
-                  completed: completed,
-                  onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id,
-                      reps: int.tryParse(v)),
-                ),
-              ),
-              const SizedBox(width: 6),
-              SizedBox(
-                width: _kCheckW,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  icon: Icon(
-                    completed ? Icons.check_circle : Icons.check_circle_outline,
-                    color: completed
-                        ? Colors.green
-                        : set.reps == null
-                            ? Colors.white12
-                            : Colors.white38,
-                  ),
-                  onPressed: set.reps == null
-                      ? null
-                      : () => notifier.toggleSetCompleted(widget.exerciseId, set.id),
-                ),
-              ),
+              ..._buildInputWidgets(notifier, set, completed, _kKgWPlan),
             ] else ...[
-            // ── Free-workout layout ───────────────────────────────────────
-            _SetMenuCell(set: set, onTap: _showSetMenu),
-            const SizedBox(width: 8),
-            // Previous performance
-            SizedBox(
-              width: _kPrevW,
-              child: Text(
-                widget.prevText ?? '—',
-                style: const TextStyle(color: Colors.white38, fontSize: 12),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const Spacer(),
-            // Weight (kg)
-            SizedBox(
-              width: _kInputW,
-              child: _NumField(
-                controller: _weightCtrl,
-                hint: '0',
-                decimal: true,
-                completed: completed,
-                onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id,
-                    weightKg: double.tryParse(v)),
-              ),
-            ),
-            const SizedBox(width: 6),
-            // Reps
-            SizedBox(
-              width: _kInputW,
-              child: _NumField(
-                controller: _repsCtrl,
-                hint: '0',
-                decimal: false,
-                completed: completed,
-                onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id,
-                    reps: int.tryParse(v)),
-              ),
-            ),
-            // RPE (only for rpe-type exercises)
-            if (widget.showRpe) ...[
-              const SizedBox(width: 6),
+              _SetMenuCell(set: set, onTap: _showSetMenu),
+              const SizedBox(width: 8),
               SizedBox(
-                width: _kInputW,
-                child: _NumField(
-                  controller: _rpeCtrl,
-                  hint: '8',
-                  decimal: true,
-                  completed: completed,
-                  onChanged: (v) => notifier.updateSet(
-                      widget.exerciseId, set.id,
-                      rpe: double.tryParse(v)),
+                width: _kPrevW,
+                child: Text(
+                  widget.prevText ?? '—',
+                  style: const TextStyle(color: Colors.white38, fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const Spacer(),
+              ..._buildInputWidgets(notifier, set, completed, _kInputW),
+              if (widget.showRpe && widget.trackingType == 'weight_reps') ...[
+                const SizedBox(width: 6),
+                SizedBox(
+                  width: _kInputW,
+                  child: _NumField(
+                    controller: _rpeCtrl,
+                    hint: '8',
+                    decimal: true,
+                    completed: completed,
+                    onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id, rpe: double.tryParse(v)),
+                  ),
+                ),
+              ],
             ],
             const SizedBox(width: 6),
-            // Complete toggle — disabled when reps are not filled in
             SizedBox(
               width: _kCheckW,
               child: IconButton(
                 padding: EdgeInsets.zero,
                 icon: Icon(
-                  completed
-                      ? Icons.check_circle
-                      : Icons.check_circle_outline,
+                  completed ? Icons.check_circle : Icons.check_circle_outline,
                   color: completed
                       ? Colors.green
-                      : set.reps == null
-                          ? Colors.white12
-                          : Colors.white38,
+                      : canComplete ? Colors.white38 : Colors.white12,
                 ),
-                onPressed: set.reps == null
-                    ? null
-                    : () => notifier.toggleSetCompleted(widget.exerciseId, set.id),
+                onPressed: canComplete
+                    ? () => notifier.toggleSetCompleted(widget.exerciseId, set.id)
+                    : null,
               ),
             ),
-            ],  // closes else ...[
           ],
         ),
       ),
-    ),  // closes AnimatedContainer
-    // ── PR badge overlay ─────────────────────────────────────────────────
+    ),
     if (widget.isPr)
       Positioned(
         right: 4,
@@ -1267,17 +1231,126 @@ class _SetRowState extends ConsumerState<_SetRow> {
           ),
           child: const Text(
             'PR',
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              letterSpacing: 0.5,
-            ),
+            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black, letterSpacing: 0.5),
           ),
         ),
       ),
-    ],  // closes Stack children
-    );  // closes Stack
+    ],
+    );
+  }
+
+  bool _canComplete(ActiveSetEntry set) {
+    switch (widget.trackingType) {
+      case 'time':
+      case 'weight_time':
+      case 'distance_time':
+        return set.durationSecs != null;
+      default:
+        return set.reps != null;
+    }
+  }
+
+  List<Widget> _buildInputWidgets(
+    dynamic notifier,
+    ActiveSetEntry set,
+    bool completed,
+    double colW,
+  ) {
+    switch (widget.trackingType) {
+      case 'reps_only':
+        return [
+          SizedBox(
+            width: colW,
+            child: _NumField(
+              controller: _repsCtrl,
+              hint: '0',
+              decimal: false,
+              completed: completed,
+              onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id, reps: int.tryParse(v)),
+            ),
+          ),
+        ];
+      case 'weight_time':
+        return [
+          SizedBox(
+            width: colW,
+            child: _NumField(
+              controller: _weightCtrl,
+              hint: '0',
+              decimal: true,
+              completed: completed,
+              onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id, weightKg: double.tryParse(v)),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: colW,
+            child: _TimeField(
+              controller: _durationCtrl,
+              completed: completed,
+              onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id, durationSecs: _parseDuration(v)),
+            ),
+          ),
+        ];
+      case 'time':
+        return [
+          SizedBox(
+            width: colW,
+            child: _TimeField(
+              controller: _durationCtrl,
+              completed: completed,
+              onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id, durationSecs: _parseDuration(v)),
+            ),
+          ),
+        ];
+      case 'distance_time':
+        return [
+          SizedBox(
+            width: colW,
+            child: _NumField(
+              controller: _distanceCtrl,
+              hint: '0.00',
+              decimal: true,
+              completed: completed,
+              onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id,
+                  distanceM: double.tryParse(v) != null ? double.parse(v) * 1000 : null),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: colW,
+            child: _TimeField(
+              controller: _durationCtrl,
+              completed: completed,
+              onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id, durationSecs: _parseDuration(v)),
+            ),
+          ),
+        ];
+      default: // weight_reps
+        return [
+          SizedBox(
+            width: colW,
+            child: _NumField(
+              controller: _weightCtrl,
+              hint: '0',
+              decimal: true,
+              completed: completed,
+              onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id, weightKg: double.tryParse(v)),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: colW,
+            child: _NumField(
+              controller: _repsCtrl,
+              hint: '0',
+              decimal: false,
+              completed: completed,
+              onChanged: (v) => notifier.updateSet(widget.exerciseId, set.id, reps: int.tryParse(v)),
+            ),
+          ),
+        ];
+    }
   }
 }
 
@@ -1378,6 +1451,59 @@ class _NumField extends StatelessWidget {
               color: completed
                   ? Colors.green
                   : Theme.of(context).colorScheme.primary),
+        ),
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.05),
+      ),
+      onChanged: onChanged,
+    );
+  }
+}
+
+// ── Time input field (MM:SS) ──────────────────────────────────────────────────
+
+class _TimeField extends StatelessWidget {
+  final TextEditingController controller;
+  final bool completed;
+  final ValueChanged<String> onChanged;
+
+  const _TimeField({
+    required this.controller,
+    required this.completed,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      textAlign: TextAlign.center,
+      keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[\d:]')),
+      ],
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: completed ? Colors.green : Colors.white,
+      ),
+      decoration: InputDecoration(
+        hintText: '0:00',
+        hintStyle: const TextStyle(color: Colors.white24),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(
+              color: completed ? Colors.green : Theme.of(context).colorScheme.primary),
         ),
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.05),

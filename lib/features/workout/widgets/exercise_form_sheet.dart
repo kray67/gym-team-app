@@ -13,6 +13,14 @@ const _equipmentOptions = [
   'Dumbbell', 'Kettlebell', 'Machine', 'Safety Bar', 'Smith Machine',
 ];
 
+const _trackingOptions = [
+  ('weight_reps', 'Weight & Reps'),
+  ('reps_only',   'Reps Only'),
+  ('weight_time', 'Weight & Time'),
+  ('time',        'Time Only'),
+  ('distance_time', 'Distance & Time'),
+];
+
 /// Shows a bottom sheet to create or edit a custom exercise.
 /// Returns true if the exercise was saved, false/null if cancelled.
 Future<bool> showExerciseFormSheet(
@@ -45,6 +53,7 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
 
   String? _selectedMuscle;
   String? _selectedEquipment;
+  String _selectedTracking = 'weight_reps';
 
   @override
   void initState() {
@@ -55,6 +64,7 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
     _selectedEquipment = _equipmentOptions.contains(widget.initial?.category)
         ? widget.initial!.category
         : null;
+    _selectedTracking = widget.initial?.trackingType ?? 'weight_reps';
   }
 
   @override
@@ -73,6 +83,7 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
           name: _nameCtrl.text.trim(),
           category: _selectedEquipment!,
           muscleGroup: _selectedMuscle!,
+          trackingType: _selectedTracking,
         );
       } else {
         await notifier.updateExercise(
@@ -80,6 +91,7 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
           name: _nameCtrl.text.trim(),
           category: _selectedEquipment!,
           muscleGroup: _selectedMuscle!,
+          trackingType: _selectedTracking,
         );
       }
       if (mounted) Navigator.of(context).pop(true);
@@ -140,6 +152,15 @@ class _ExerciseFormSheetState extends ConsumerState<_ExerciseFormSheet> {
                   .toList(),
               onChanged: (v) => setState(() => _selectedEquipment = v),
               validator: (v) => v == null ? 'Required' : null,
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedTracking,
+              decoration: const InputDecoration(labelText: 'Tracking type'),
+              items: _trackingOptions
+                  .map((t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)))
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedTracking = v!),
             ),
             const SizedBox(height: 24),
             FilledButton(

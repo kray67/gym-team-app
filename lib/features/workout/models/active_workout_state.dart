@@ -11,6 +11,8 @@ abstract class ActiveSetEntry with _$ActiveSetEntry {
     int? reps,
     double? weightKg,
     double? rpe,
+    int? durationSecs,
+    double? distanceM,
     @Default(false) bool completed,
     @Default(false) bool isWarmup,
     /// Pre-computed target text shown in TARGET column for plan-based workouts.

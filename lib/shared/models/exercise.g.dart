@@ -16,6 +16,7 @@ _Exercise _$ExerciseFromJson(Map<String, dynamic> json) => _Exercise(
       const [],
   isCustom: json['is_custom'] as bool,
   createdBy: json['created_by'] as String?,
+  trackingType: json['tracking_type'] as String? ?? 'weight_reps',
 );
 
 Map<String, dynamic> _$ExerciseToJson(_Exercise instance) => <String, dynamic>{
@@ -26,4 +27,5 @@ Map<String, dynamic> _$ExerciseToJson(_Exercise instance) => <String, dynamic>{
   'muscles': instance.muscles,
   'is_custom': instance.isCustom,
   'created_by': instance.createdBy,
+  'tracking_type': instance.trackingType,
 };

@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$PlanExerciseSet {
 
  String get id;@JsonKey(name: 'plan_exercise_id') String get planExerciseId;@JsonKey(name: 'set_number') int get setNumber;@JsonKey(name: 'target_reps') int? get targetReps;@JsonKey(name: 'target_reps_max') int? get targetRepsMax;@JsonKey(name: 'target_weight') double? get targetWeight;// stores % 1RM value
-@JsonKey(name: 'target_rpe') double? get targetRpe;@JsonKey(name: 'target_rpe_max') double? get targetRpeMax;@JsonKey(name: 'is_warmup') bool get isWarmup;@JsonKey(name: 'weight_increment') double? get weightIncrement;
+@JsonKey(name: 'target_rpe') double? get targetRpe;@JsonKey(name: 'target_rpe_max') double? get targetRpeMax;@JsonKey(name: 'is_warmup') bool get isWarmup;@JsonKey(name: 'weight_increment') double? get weightIncrement;@JsonKey(name: 'target_duration_secs') int? get targetDurationSecs;
 /// Create a copy of PlanExerciseSet
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $PlanExerciseSetCopyWith<PlanExerciseSet> get copyWith => _$PlanExerciseSetCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanExerciseSet&&(identical(other.id, id) || other.id == id)&&(identical(other.planExerciseId, planExerciseId) || other.planExerciseId == planExerciseId)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.targetReps, targetReps) || other.targetReps == targetReps)&&(identical(other.targetRepsMax, targetRepsMax) || other.targetRepsMax == targetRepsMax)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.targetRpe, targetRpe) || other.targetRpe == targetRpe)&&(identical(other.targetRpeMax, targetRpeMax) || other.targetRpeMax == targetRpeMax)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.weightIncrement, weightIncrement) || other.weightIncrement == weightIncrement));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanExerciseSet&&(identical(other.id, id) || other.id == id)&&(identical(other.planExerciseId, planExerciseId) || other.planExerciseId == planExerciseId)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.targetReps, targetReps) || other.targetReps == targetReps)&&(identical(other.targetRepsMax, targetRepsMax) || other.targetRepsMax == targetRepsMax)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.targetRpe, targetRpe) || other.targetRpe == targetRpe)&&(identical(other.targetRpeMax, targetRpeMax) || other.targetRpeMax == targetRpeMax)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.weightIncrement, weightIncrement) || other.weightIncrement == weightIncrement)&&(identical(other.targetDurationSecs, targetDurationSecs) || other.targetDurationSecs == targetDurationSecs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,planExerciseId,setNumber,targetReps,targetRepsMax,targetWeight,targetRpe,targetRpeMax,isWarmup,weightIncrement);
+int get hashCode => Object.hash(runtimeType,id,planExerciseId,setNumber,targetReps,targetRepsMax,targetWeight,targetRpe,targetRpeMax,isWarmup,weightIncrement,targetDurationSecs);
 
 @override
 String toString() {
-  return 'PlanExerciseSet(id: $id, planExerciseId: $planExerciseId, setNumber: $setNumber, targetReps: $targetReps, targetRepsMax: $targetRepsMax, targetWeight: $targetWeight, targetRpe: $targetRpe, targetRpeMax: $targetRpeMax, isWarmup: $isWarmup, weightIncrement: $weightIncrement)';
+  return 'PlanExerciseSet(id: $id, planExerciseId: $planExerciseId, setNumber: $setNumber, targetReps: $targetReps, targetRepsMax: $targetRepsMax, targetWeight: $targetWeight, targetRpe: $targetRpe, targetRpeMax: $targetRpeMax, isWarmup: $isWarmup, weightIncrement: $weightIncrement, targetDurationSecs: $targetDurationSecs)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $PlanExerciseSetCopyWith<$Res>  {
   factory $PlanExerciseSetCopyWith(PlanExerciseSet value, $Res Function(PlanExerciseSet) _then) = _$PlanExerciseSetCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'plan_exercise_id') String planExerciseId,@JsonKey(name: 'set_number') int setNumber,@JsonKey(name: 'target_reps') int? targetReps,@JsonKey(name: 'target_reps_max') int? targetRepsMax,@JsonKey(name: 'target_weight') double? targetWeight,@JsonKey(name: 'target_rpe') double? targetRpe,@JsonKey(name: 'target_rpe_max') double? targetRpeMax,@JsonKey(name: 'is_warmup') bool isWarmup,@JsonKey(name: 'weight_increment') double? weightIncrement
+ String id,@JsonKey(name: 'plan_exercise_id') String planExerciseId,@JsonKey(name: 'set_number') int setNumber,@JsonKey(name: 'target_reps') int? targetReps,@JsonKey(name: 'target_reps_max') int? targetRepsMax,@JsonKey(name: 'target_weight') double? targetWeight,@JsonKey(name: 'target_rpe') double? targetRpe,@JsonKey(name: 'target_rpe_max') double? targetRpeMax,@JsonKey(name: 'is_warmup') bool isWarmup,@JsonKey(name: 'weight_increment') double? weightIncrement,@JsonKey(name: 'target_duration_secs') int? targetDurationSecs
 });
 
 
@@ -66,7 +66,7 @@ class _$PlanExerciseSetCopyWithImpl<$Res>
 
 /// Create a copy of PlanExerciseSet
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? planExerciseId = null,Object? setNumber = null,Object? targetReps = freezed,Object? targetRepsMax = freezed,Object? targetWeight = freezed,Object? targetRpe = freezed,Object? targetRpeMax = freezed,Object? isWarmup = null,Object? weightIncrement = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? planExerciseId = null,Object? setNumber = null,Object? targetReps = freezed,Object? targetRepsMax = freezed,Object? targetWeight = freezed,Object? targetRpe = freezed,Object? targetRpeMax = freezed,Object? isWarmup = null,Object? weightIncrement = freezed,Object? targetDurationSecs = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,planExerciseId: null == planExerciseId ? _self.planExerciseId : planExerciseId // ignore: cast_nullable_to_non_nullable
@@ -78,7 +78,8 @@ as double?,targetRpe: freezed == targetRpe ? _self.targetRpe : targetRpe // igno
 as double?,targetRpeMax: freezed == targetRpeMax ? _self.targetRpeMax : targetRpeMax // ignore: cast_nullable_to_non_nullable
 as double?,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
 as bool,weightIncrement: freezed == weightIncrement ? _self.weightIncrement : weightIncrement // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,targetDurationSecs: freezed == targetDurationSecs ? _self.targetDurationSecs : targetDurationSecs // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -163,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'plan_exercise_id')  String planExerciseId, @JsonKey(name: 'set_number')  int setNumber, @JsonKey(name: 'target_reps')  int? targetReps, @JsonKey(name: 'target_reps_max')  int? targetRepsMax, @JsonKey(name: 'target_weight')  double? targetWeight, @JsonKey(name: 'target_rpe')  double? targetRpe, @JsonKey(name: 'target_rpe_max')  double? targetRpeMax, @JsonKey(name: 'is_warmup')  bool isWarmup, @JsonKey(name: 'weight_increment')  double? weightIncrement)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'plan_exercise_id')  String planExerciseId, @JsonKey(name: 'set_number')  int setNumber, @JsonKey(name: 'target_reps')  int? targetReps, @JsonKey(name: 'target_reps_max')  int? targetRepsMax, @JsonKey(name: 'target_weight')  double? targetWeight, @JsonKey(name: 'target_rpe')  double? targetRpe, @JsonKey(name: 'target_rpe_max')  double? targetRpeMax, @JsonKey(name: 'is_warmup')  bool isWarmup, @JsonKey(name: 'weight_increment')  double? weightIncrement, @JsonKey(name: 'target_duration_secs')  int? targetDurationSecs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlanExerciseSet() when $default != null:
-return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement);case _:
+return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement,_that.targetDurationSecs);case _:
   return orElse();
 
 }
@@ -184,10 +185,10 @@ return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'plan_exercise_id')  String planExerciseId, @JsonKey(name: 'set_number')  int setNumber, @JsonKey(name: 'target_reps')  int? targetReps, @JsonKey(name: 'target_reps_max')  int? targetRepsMax, @JsonKey(name: 'target_weight')  double? targetWeight, @JsonKey(name: 'target_rpe')  double? targetRpe, @JsonKey(name: 'target_rpe_max')  double? targetRpeMax, @JsonKey(name: 'is_warmup')  bool isWarmup, @JsonKey(name: 'weight_increment')  double? weightIncrement)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'plan_exercise_id')  String planExerciseId, @JsonKey(name: 'set_number')  int setNumber, @JsonKey(name: 'target_reps')  int? targetReps, @JsonKey(name: 'target_reps_max')  int? targetRepsMax, @JsonKey(name: 'target_weight')  double? targetWeight, @JsonKey(name: 'target_rpe')  double? targetRpe, @JsonKey(name: 'target_rpe_max')  double? targetRpeMax, @JsonKey(name: 'is_warmup')  bool isWarmup, @JsonKey(name: 'weight_increment')  double? weightIncrement, @JsonKey(name: 'target_duration_secs')  int? targetDurationSecs)  $default,) {final _that = this;
 switch (_that) {
 case _PlanExerciseSet():
-return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement);case _:
+return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement,_that.targetDurationSecs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +205,10 @@ return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'plan_exercise_id')  String planExerciseId, @JsonKey(name: 'set_number')  int setNumber, @JsonKey(name: 'target_reps')  int? targetReps, @JsonKey(name: 'target_reps_max')  int? targetRepsMax, @JsonKey(name: 'target_weight')  double? targetWeight, @JsonKey(name: 'target_rpe')  double? targetRpe, @JsonKey(name: 'target_rpe_max')  double? targetRpeMax, @JsonKey(name: 'is_warmup')  bool isWarmup, @JsonKey(name: 'weight_increment')  double? weightIncrement)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'plan_exercise_id')  String planExerciseId, @JsonKey(name: 'set_number')  int setNumber, @JsonKey(name: 'target_reps')  int? targetReps, @JsonKey(name: 'target_reps_max')  int? targetRepsMax, @JsonKey(name: 'target_weight')  double? targetWeight, @JsonKey(name: 'target_rpe')  double? targetRpe, @JsonKey(name: 'target_rpe_max')  double? targetRpeMax, @JsonKey(name: 'is_warmup')  bool isWarmup, @JsonKey(name: 'weight_increment')  double? weightIncrement, @JsonKey(name: 'target_duration_secs')  int? targetDurationSecs)?  $default,) {final _that = this;
 switch (_that) {
 case _PlanExerciseSet() when $default != null:
-return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement);case _:
+return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement,_that.targetDurationSecs);case _:
   return null;
 
 }
@@ -219,7 +220,7 @@ return $default(_that.id,_that.planExerciseId,_that.setNumber,_that.targetReps,_
 @JsonSerializable()
 
 class _PlanExerciseSet implements PlanExerciseSet {
-  const _PlanExerciseSet({required this.id, @JsonKey(name: 'plan_exercise_id') required this.planExerciseId, @JsonKey(name: 'set_number') required this.setNumber, @JsonKey(name: 'target_reps') this.targetReps, @JsonKey(name: 'target_reps_max') this.targetRepsMax, @JsonKey(name: 'target_weight') this.targetWeight, @JsonKey(name: 'target_rpe') this.targetRpe, @JsonKey(name: 'target_rpe_max') this.targetRpeMax, @JsonKey(name: 'is_warmup') this.isWarmup = false, @JsonKey(name: 'weight_increment') this.weightIncrement});
+  const _PlanExerciseSet({required this.id, @JsonKey(name: 'plan_exercise_id') required this.planExerciseId, @JsonKey(name: 'set_number') required this.setNumber, @JsonKey(name: 'target_reps') this.targetReps, @JsonKey(name: 'target_reps_max') this.targetRepsMax, @JsonKey(name: 'target_weight') this.targetWeight, @JsonKey(name: 'target_rpe') this.targetRpe, @JsonKey(name: 'target_rpe_max') this.targetRpeMax, @JsonKey(name: 'is_warmup') this.isWarmup = false, @JsonKey(name: 'weight_increment') this.weightIncrement, @JsonKey(name: 'target_duration_secs') this.targetDurationSecs});
   factory _PlanExerciseSet.fromJson(Map<String, dynamic> json) => _$PlanExerciseSetFromJson(json);
 
 @override final  String id;
@@ -233,6 +234,7 @@ class _PlanExerciseSet implements PlanExerciseSet {
 @override@JsonKey(name: 'target_rpe_max') final  double? targetRpeMax;
 @override@JsonKey(name: 'is_warmup') final  bool isWarmup;
 @override@JsonKey(name: 'weight_increment') final  double? weightIncrement;
+@override@JsonKey(name: 'target_duration_secs') final  int? targetDurationSecs;
 
 /// Create a copy of PlanExerciseSet
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +249,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanExerciseSet&&(identical(other.id, id) || other.id == id)&&(identical(other.planExerciseId, planExerciseId) || other.planExerciseId == planExerciseId)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.targetReps, targetReps) || other.targetReps == targetReps)&&(identical(other.targetRepsMax, targetRepsMax) || other.targetRepsMax == targetRepsMax)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.targetRpe, targetRpe) || other.targetRpe == targetRpe)&&(identical(other.targetRpeMax, targetRpeMax) || other.targetRpeMax == targetRpeMax)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.weightIncrement, weightIncrement) || other.weightIncrement == weightIncrement));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanExerciseSet&&(identical(other.id, id) || other.id == id)&&(identical(other.planExerciseId, planExerciseId) || other.planExerciseId == planExerciseId)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.targetReps, targetReps) || other.targetReps == targetReps)&&(identical(other.targetRepsMax, targetRepsMax) || other.targetRepsMax == targetRepsMax)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.targetRpe, targetRpe) || other.targetRpe == targetRpe)&&(identical(other.targetRpeMax, targetRpeMax) || other.targetRpeMax == targetRpeMax)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.weightIncrement, weightIncrement) || other.weightIncrement == weightIncrement)&&(identical(other.targetDurationSecs, targetDurationSecs) || other.targetDurationSecs == targetDurationSecs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,planExerciseId,setNumber,targetReps,targetRepsMax,targetWeight,targetRpe,targetRpeMax,isWarmup,weightIncrement);
+int get hashCode => Object.hash(runtimeType,id,planExerciseId,setNumber,targetReps,targetRepsMax,targetWeight,targetRpe,targetRpeMax,isWarmup,weightIncrement,targetDurationSecs);
 
 @override
 String toString() {
-  return 'PlanExerciseSet(id: $id, planExerciseId: $planExerciseId, setNumber: $setNumber, targetReps: $targetReps, targetRepsMax: $targetRepsMax, targetWeight: $targetWeight, targetRpe: $targetRpe, targetRpeMax: $targetRpeMax, isWarmup: $isWarmup, weightIncrement: $weightIncrement)';
+  return 'PlanExerciseSet(id: $id, planExerciseId: $planExerciseId, setNumber: $setNumber, targetReps: $targetReps, targetRepsMax: $targetRepsMax, targetWeight: $targetWeight, targetRpe: $targetRpe, targetRpeMax: $targetRpeMax, isWarmup: $isWarmup, weightIncrement: $weightIncrement, targetDurationSecs: $targetDurationSecs)';
 }
 
 
@@ -267,7 +269,7 @@ abstract mixin class _$PlanExerciseSetCopyWith<$Res> implements $PlanExerciseSet
   factory _$PlanExerciseSetCopyWith(_PlanExerciseSet value, $Res Function(_PlanExerciseSet) _then) = __$PlanExerciseSetCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'plan_exercise_id') String planExerciseId,@JsonKey(name: 'set_number') int setNumber,@JsonKey(name: 'target_reps') int? targetReps,@JsonKey(name: 'target_reps_max') int? targetRepsMax,@JsonKey(name: 'target_weight') double? targetWeight,@JsonKey(name: 'target_rpe') double? targetRpe,@JsonKey(name: 'target_rpe_max') double? targetRpeMax,@JsonKey(name: 'is_warmup') bool isWarmup,@JsonKey(name: 'weight_increment') double? weightIncrement
+ String id,@JsonKey(name: 'plan_exercise_id') String planExerciseId,@JsonKey(name: 'set_number') int setNumber,@JsonKey(name: 'target_reps') int? targetReps,@JsonKey(name: 'target_reps_max') int? targetRepsMax,@JsonKey(name: 'target_weight') double? targetWeight,@JsonKey(name: 'target_rpe') double? targetRpe,@JsonKey(name: 'target_rpe_max') double? targetRpeMax,@JsonKey(name: 'is_warmup') bool isWarmup,@JsonKey(name: 'weight_increment') double? weightIncrement,@JsonKey(name: 'target_duration_secs') int? targetDurationSecs
 });
 
 
@@ -284,7 +286,7 @@ class __$PlanExerciseSetCopyWithImpl<$Res>
 
 /// Create a copy of PlanExerciseSet
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? planExerciseId = null,Object? setNumber = null,Object? targetReps = freezed,Object? targetRepsMax = freezed,Object? targetWeight = freezed,Object? targetRpe = freezed,Object? targetRpeMax = freezed,Object? isWarmup = null,Object? weightIncrement = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? planExerciseId = null,Object? setNumber = null,Object? targetReps = freezed,Object? targetRepsMax = freezed,Object? targetWeight = freezed,Object? targetRpe = freezed,Object? targetRpeMax = freezed,Object? isWarmup = null,Object? weightIncrement = freezed,Object? targetDurationSecs = freezed,}) {
   return _then(_PlanExerciseSet(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,planExerciseId: null == planExerciseId ? _self.planExerciseId : planExerciseId // ignore: cast_nullable_to_non_nullable
@@ -296,7 +298,8 @@ as double?,targetRpe: freezed == targetRpe ? _self.targetRpe : targetRpe // igno
 as double?,targetRpeMax: freezed == targetRpeMax ? _self.targetRpeMax : targetRpeMax // ignore: cast_nullable_to_non_nullable
 as double?,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
 as bool,weightIncrement: freezed == weightIncrement ? _self.weightIncrement : weightIncrement // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,targetDurationSecs: freezed == targetDurationSecs ? _self.targetDurationSecs : targetDurationSecs // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ActiveSetEntry {
 
- String get id; int get setNumber; int? get reps; double? get weightKg; double? get rpe; bool get completed; bool get isWarmup;/// Pre-computed target text shown in TARGET column for plan-based workouts.
+ String get id; int get setNumber; int? get reps; double? get weightKg; double? get rpe; int? get durationSecs; double? get distanceM; bool get completed; bool get isWarmup;/// Pre-computed target text shown in TARGET column for plan-based workouts.
 /// Line 1 and line 2 separated by '\n'. Null for free workouts.
  String? get targetText;
 /// Create a copy of ActiveSetEntry
@@ -27,16 +27,16 @@ $ActiveSetEntryCopyWith<ActiveSetEntry> get copyWith => _$ActiveSetEntryCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveSetEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.completed, completed) || other.completed == completed)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.targetText, targetText) || other.targetText == targetText));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveSetEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.durationSecs, durationSecs) || other.durationSecs == durationSecs)&&(identical(other.distanceM, distanceM) || other.distanceM == distanceM)&&(identical(other.completed, completed) || other.completed == completed)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.targetText, targetText) || other.targetText == targetText));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,setNumber,reps,weightKg,rpe,completed,isWarmup,targetText);
+int get hashCode => Object.hash(runtimeType,id,setNumber,reps,weightKg,rpe,durationSecs,distanceM,completed,isWarmup,targetText);
 
 @override
 String toString() {
-  return 'ActiveSetEntry(id: $id, setNumber: $setNumber, reps: $reps, weightKg: $weightKg, rpe: $rpe, completed: $completed, isWarmup: $isWarmup, targetText: $targetText)';
+  return 'ActiveSetEntry(id: $id, setNumber: $setNumber, reps: $reps, weightKg: $weightKg, rpe: $rpe, durationSecs: $durationSecs, distanceM: $distanceM, completed: $completed, isWarmup: $isWarmup, targetText: $targetText)';
 }
 
 
@@ -47,7 +47,7 @@ abstract mixin class $ActiveSetEntryCopyWith<$Res>  {
   factory $ActiveSetEntryCopyWith(ActiveSetEntry value, $Res Function(ActiveSetEntry) _then) = _$ActiveSetEntryCopyWithImpl;
 @useResult
 $Res call({
- String id, int setNumber, int? reps, double? weightKg, double? rpe, bool completed, bool isWarmup, String? targetText
+ String id, int setNumber, int? reps, double? weightKg, double? rpe, int? durationSecs, double? distanceM, bool completed, bool isWarmup, String? targetText
 });
 
 
@@ -64,13 +64,15 @@ class _$ActiveSetEntryCopyWithImpl<$Res>
 
 /// Create a copy of ActiveSetEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? setNumber = null,Object? reps = freezed,Object? weightKg = freezed,Object? rpe = freezed,Object? completed = null,Object? isWarmup = null,Object? targetText = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? setNumber = null,Object? reps = freezed,Object? weightKg = freezed,Object? rpe = freezed,Object? durationSecs = freezed,Object? distanceM = freezed,Object? completed = null,Object? isWarmup = null,Object? targetText = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,setNumber: null == setNumber ? _self.setNumber : setNumber // ignore: cast_nullable_to_non_nullable
 as int,reps: freezed == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nullable
 as int?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
 as double?,rpe: freezed == rpe ? _self.rpe : rpe // ignore: cast_nullable_to_non_nullable
+as double?,durationSecs: freezed == durationSecs ? _self.durationSecs : durationSecs // ignore: cast_nullable_to_non_nullable
+as int?,distanceM: freezed == distanceM ? _self.distanceM : distanceM // ignore: cast_nullable_to_non_nullable
 as double?,completed: null == completed ? _self.completed : completed // ignore: cast_nullable_to_non_nullable
 as bool,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
 as bool,targetText: freezed == targetText ? _self.targetText : targetText // ignore: cast_nullable_to_non_nullable
@@ -159,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int setNumber,  int? reps,  double? weightKg,  double? rpe,  bool completed,  bool isWarmup,  String? targetText)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int setNumber,  int? reps,  double? weightKg,  double? rpe,  int? durationSecs,  double? distanceM,  bool completed,  bool isWarmup,  String? targetText)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ActiveSetEntry() when $default != null:
-return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_that.completed,_that.isWarmup,_that.targetText);case _:
+return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_that.durationSecs,_that.distanceM,_that.completed,_that.isWarmup,_that.targetText);case _:
   return orElse();
 
 }
@@ -180,10 +182,10 @@ return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int setNumber,  int? reps,  double? weightKg,  double? rpe,  bool completed,  bool isWarmup,  String? targetText)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int setNumber,  int? reps,  double? weightKg,  double? rpe,  int? durationSecs,  double? distanceM,  bool completed,  bool isWarmup,  String? targetText)  $default,) {final _that = this;
 switch (_that) {
 case _ActiveSetEntry():
-return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_that.completed,_that.isWarmup,_that.targetText);case _:
+return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_that.durationSecs,_that.distanceM,_that.completed,_that.isWarmup,_that.targetText);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +202,10 @@ return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int setNumber,  int? reps,  double? weightKg,  double? rpe,  bool completed,  bool isWarmup,  String? targetText)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int setNumber,  int? reps,  double? weightKg,  double? rpe,  int? durationSecs,  double? distanceM,  bool completed,  bool isWarmup,  String? targetText)?  $default,) {final _that = this;
 switch (_that) {
 case _ActiveSetEntry() when $default != null:
-return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_that.completed,_that.isWarmup,_that.targetText);case _:
+return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_that.durationSecs,_that.distanceM,_that.completed,_that.isWarmup,_that.targetText);case _:
   return null;
 
 }
@@ -215,7 +217,7 @@ return $default(_that.id,_that.setNumber,_that.reps,_that.weightKg,_that.rpe,_th
 
 
 class _ActiveSetEntry implements ActiveSetEntry {
-  const _ActiveSetEntry({required this.id, required this.setNumber, this.reps, this.weightKg, this.rpe, this.completed = false, this.isWarmup = false, this.targetText});
+  const _ActiveSetEntry({required this.id, required this.setNumber, this.reps, this.weightKg, this.rpe, this.durationSecs, this.distanceM, this.completed = false, this.isWarmup = false, this.targetText});
   
 
 @override final  String id;
@@ -223,6 +225,8 @@ class _ActiveSetEntry implements ActiveSetEntry {
 @override final  int? reps;
 @override final  double? weightKg;
 @override final  double? rpe;
+@override final  int? durationSecs;
+@override final  double? distanceM;
 @override@JsonKey() final  bool completed;
 @override@JsonKey() final  bool isWarmup;
 /// Pre-computed target text shown in TARGET column for plan-based workouts.
@@ -239,16 +243,16 @@ _$ActiveSetEntryCopyWith<_ActiveSetEntry> get copyWith => __$ActiveSetEntryCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ActiveSetEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.completed, completed) || other.completed == completed)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.targetText, targetText) || other.targetText == targetText));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ActiveSetEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.durationSecs, durationSecs) || other.durationSecs == durationSecs)&&(identical(other.distanceM, distanceM) || other.distanceM == distanceM)&&(identical(other.completed, completed) || other.completed == completed)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.targetText, targetText) || other.targetText == targetText));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,setNumber,reps,weightKg,rpe,completed,isWarmup,targetText);
+int get hashCode => Object.hash(runtimeType,id,setNumber,reps,weightKg,rpe,durationSecs,distanceM,completed,isWarmup,targetText);
 
 @override
 String toString() {
-  return 'ActiveSetEntry(id: $id, setNumber: $setNumber, reps: $reps, weightKg: $weightKg, rpe: $rpe, completed: $completed, isWarmup: $isWarmup, targetText: $targetText)';
+  return 'ActiveSetEntry(id: $id, setNumber: $setNumber, reps: $reps, weightKg: $weightKg, rpe: $rpe, durationSecs: $durationSecs, distanceM: $distanceM, completed: $completed, isWarmup: $isWarmup, targetText: $targetText)';
 }
 
 
@@ -259,7 +263,7 @@ abstract mixin class _$ActiveSetEntryCopyWith<$Res> implements $ActiveSetEntryCo
   factory _$ActiveSetEntryCopyWith(_ActiveSetEntry value, $Res Function(_ActiveSetEntry) _then) = __$ActiveSetEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, int setNumber, int? reps, double? weightKg, double? rpe, bool completed, bool isWarmup, String? targetText
+ String id, int setNumber, int? reps, double? weightKg, double? rpe, int? durationSecs, double? distanceM, bool completed, bool isWarmup, String? targetText
 });
 
 
@@ -276,13 +280,15 @@ class __$ActiveSetEntryCopyWithImpl<$Res>
 
 /// Create a copy of ActiveSetEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? setNumber = null,Object? reps = freezed,Object? weightKg = freezed,Object? rpe = freezed,Object? completed = null,Object? isWarmup = null,Object? targetText = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? setNumber = null,Object? reps = freezed,Object? weightKg = freezed,Object? rpe = freezed,Object? durationSecs = freezed,Object? distanceM = freezed,Object? completed = null,Object? isWarmup = null,Object? targetText = freezed,}) {
   return _then(_ActiveSetEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,setNumber: null == setNumber ? _self.setNumber : setNumber // ignore: cast_nullable_to_non_nullable
 as int,reps: freezed == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nullable
 as int?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
 as double?,rpe: freezed == rpe ? _self.rpe : rpe // ignore: cast_nullable_to_non_nullable
+as double?,durationSecs: freezed == durationSecs ? _self.durationSecs : durationSecs // ignore: cast_nullable_to_non_nullable
+as int?,distanceM: freezed == distanceM ? _self.distanceM : distanceM // ignore: cast_nullable_to_non_nullable
 as double?,completed: null == completed ? _self.completed : completed // ignore: cast_nullable_to_non_nullable
 as bool,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
 as bool,targetText: freezed == targetText ? _self.targetText : targetText // ignore: cast_nullable_to_non_nullable

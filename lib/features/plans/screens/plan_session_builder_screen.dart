@@ -847,9 +847,9 @@ class _ExercisePlanCard extends ConsumerWidget {
                     child: SegmentedButton<String>(
                       segments: const [
                         ButtonSegment(value: 'reps', label: Text('Reps')),
-                        ButtonSegment(
-                            value: 'reps_range', label: Text('Range')),
+                        ButtonSegment(value: 'reps_range', label: Text('Range')),
                         ButtonSegment(value: 'amrap', label: Text('AMRAP')),
+                        ButtonSegment(value: 'time', label: Text('Time')),
                       ],
                       selected: {entry.goalType},
                       onSelectionChanged: (v) => notifier.updateExerciseType(
@@ -867,8 +867,8 @@ class _ExercisePlanCard extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
 
-              // ── Intensity type selector ─────────────────────────────────
-              Row(
+              // ── Intensity type selector (hidden for time-based goal) ────
+              if (entry.goalType != 'time') Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Padding(
@@ -969,7 +969,13 @@ class _PlanTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           // Goal columns
-          if (goalType == 'reps') ...[
+          if (goalType == 'time') ...[
+            SizedBox(
+              width: _kInputW * 1.5,
+              child: const Text('TIME (MM:SS)', style: _style, textAlign: TextAlign.center),
+            ),
+            const SizedBox(width: 6),
+          ] else if (goalType == 'reps') ...[
             SizedBox(
               width: _kInputW,
               child: const Text('REPS', style: _style, textAlign: TextAlign.center),
@@ -989,8 +995,8 @@ class _PlanTableHeader extends StatelessWidget {
           ] else ...[
             // amrap — no reps columns
           ],
-          // Intensity columns
-          if (weightType == 'percent_1rm') ...[
+          // Intensity columns (hidden for time goal)
+          if (goalType != 'time' && weightType == 'percent_1rm') ...[
             SizedBox(
               width: _kInputW,
               child: const Text('% 1RM', style: _style, textAlign: TextAlign.center),
@@ -1002,7 +1008,7 @@ class _PlanTableHeader extends StatelessWidget {
               child: const Text('RPE', style: _style, textAlign: TextAlign.center),
             ),
             const SizedBox(width: 6),
-          ] else if (weightType == 'rpe_range') ...[
+          ] else if (goalType != 'time' && weightType == 'rpe_range') ...[
             SizedBox(
               width: _kInputW,
               child: const Text('RPE MIN', style: _style, textAlign: TextAlign.center),
@@ -1013,7 +1019,7 @@ class _PlanTableHeader extends StatelessWidget {
               child: const Text('RPE MAX', style: _style, textAlign: TextAlign.center),
             ),
             const SizedBox(width: 6),
-          ] else ...[
+          ] else if (goalType != 'time') ...[
             // prev_week_plus / prev_session_plus
             SizedBox(
               width: _kInputW,
@@ -1057,18 +1063,38 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
   late final TextEditingController _rpeCtrl;
   late final TextEditingController _rpeMaxCtrl;
   late final TextEditingController _incrCtrl;
+  late final TextEditingController _durationCtrl;
+
+  static String _fmtDuration(int? secs) {
+    if (secs == null) return '';
+    final m = secs ~/ 60;
+    final s = secs % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  static int? _parseDuration(String text) {
+    if (text.isEmpty) return null;
+    if (text.contains(':')) {
+      final parts = text.split(':');
+      if (parts.length == 2) {
+        final m = int.tryParse(parts[0]);
+        final s = int.tryParse(parts[1]);
+        if (m != null && s != null) return m * 60 + s;
+      }
+      return null;
+    }
+    return int.tryParse(text);
+  }
 
   @override
   void initState() {
     super.initState();
     final s = widget.set;
     _repsCtrl = TextEditingController(text: s.targetReps?.toString() ?? '');
-    _repsMaxCtrl =
-        TextEditingController(text: s.targetRepsMax?.toString() ?? '');
+    _repsMaxCtrl = TextEditingController(text: s.targetRepsMax?.toString() ?? '');
     _weightCtrl = TextEditingController(
         text: s.targetWeight != null
-            ? s.targetWeight!
-                .toStringAsFixed(s.targetWeight! % 1 == 0 ? 0 : 1)
+            ? s.targetWeight!.toStringAsFixed(s.targetWeight! % 1 == 0 ? 0 : 1)
             : '');
     _rpeCtrl = TextEditingController(
         text: s.targetRpe != null
@@ -1076,14 +1102,13 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
             : '');
     _rpeMaxCtrl = TextEditingController(
         text: s.targetRpeMax != null
-            ? s.targetRpeMax!
-                .toStringAsFixed(s.targetRpeMax! % 1 == 0 ? 0 : 1)
+            ? s.targetRpeMax!.toStringAsFixed(s.targetRpeMax! % 1 == 0 ? 0 : 1)
             : '');
     _incrCtrl = TextEditingController(
         text: s.weightIncrement != null
-            ? s.weightIncrement!
-                .toStringAsFixed(s.weightIncrement! % 1 == 0 ? 0 : 1)
+            ? s.weightIncrement!.toStringAsFixed(s.weightIncrement! % 1 == 0 ? 0 : 1)
             : '');
+    _durationCtrl = TextEditingController(text: _fmtDuration(s.targetDurationSecs));
   }
 
   @override
@@ -1094,6 +1119,7 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
     _rpeCtrl.dispose();
     _rpeMaxCtrl.dispose();
     _incrCtrl.dispose();
+    _durationCtrl.dispose();
     super.dispose();
   }
 
@@ -1119,6 +1145,7 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
           targetRpe: double.tryParse(_rpeCtrl.text),
           targetRpeMax: double.tryParse(_rpeMaxCtrl.text),
           weightIncrement: double.tryParse(_incrCtrl.text),
+          targetDurationSecs: _parseDuration(_durationCtrl.text),
         );
   }
 
@@ -1203,7 +1230,16 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
           const SizedBox(width: 6),
 
           // Goal inputs
-          if (widget.goalType == 'reps') ...[
+          if (widget.goalType == 'time') ...[
+            SizedBox(
+              width: _kInputW * 1.5,
+              child: _PlanTimeField(
+                controller: _durationCtrl,
+                onChanged: (_) => _save(),
+              ),
+            ),
+            const SizedBox(width: 6),
+          ] else if (widget.goalType == 'reps') ...[
             SizedBox(
               width: _kInputW,
               child: _PlanNumField(
@@ -1238,8 +1274,8 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
           ],
           // amrap: no reps inputs
 
-          // Intensity inputs
-          if (widget.weightType == 'percent_1rm') ...[
+          // Intensity inputs (hidden for time goal)
+          if (widget.goalType != 'time' && widget.weightType == 'percent_1rm') ...[
             SizedBox(
               width: _kInputW,
               child: _PlanNumField(
@@ -1250,7 +1286,7 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
               ),
             ),
             const SizedBox(width: 6),
-          ] else if (widget.weightType == 'rpe') ...[
+          ] else if (widget.goalType != 'time' && widget.weightType == 'rpe') ...[
             SizedBox(
               width: _kInputW,
               child: _PlanNumField(
@@ -1261,7 +1297,7 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
               ),
             ),
             const SizedBox(width: 6),
-          ] else if (widget.weightType == 'rpe_range') ...[
+          ] else if (widget.goalType != 'time' && widget.weightType == 'rpe_range') ...[
             SizedBox(
               width: _kInputW,
               child: _PlanNumField(
@@ -1282,7 +1318,7 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
               ),
             ),
             const SizedBox(width: 6),
-          ] else ...[
+          ] else if (widget.goalType != 'time') ...[
             // prev_week_plus / prev_session_plus — show increment input
             SizedBox(
               width: _kInputW,
@@ -1369,6 +1405,52 @@ class _PlanNumField extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(
               color: Theme.of(context).colorScheme.primary),
+        ),
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.05),
+      ),
+      onChanged: onChanged,
+    );
+  }
+}
+
+// ── Time input field (MM:SS) ──────────────────────────────────────────────────
+
+class _PlanTimeField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _PlanTimeField({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      textAlign: TextAlign.center,
+      keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[\d:]')),
+      ],
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+      decoration: InputDecoration(
+        hintText: '0:00',
+        hintStyle: const TextStyle(color: Colors.white24),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
         ),
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.05),

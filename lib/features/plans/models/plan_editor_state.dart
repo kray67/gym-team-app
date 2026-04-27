@@ -15,6 +15,7 @@ abstract class PlanEditorSet with _$PlanEditorSet {
     double? targetRpeMax,
     @Default(false) bool isWarmup,
     double? weightIncrement,
+    int? targetDurationSecs,
   }) = _PlanEditorSet;
 }
 
@@ -23,7 +24,7 @@ abstract class PlanEditorExercise with _$PlanEditorExercise {
   const factory PlanEditorExercise({
     required String id,
     required Exercise exercise,
-    @Default('reps') String goalType,       // 'reps' | 'reps_range' | 'amrap'
+    @Default('reps') String goalType,       // 'reps' | 'reps_range' | 'amrap' | 'time'
     @Default('percent_1rm') String weightType, // 'percent_1rm' | 'rpe' | 'rpe_range'
     @Default([]) List<PlanEditorSet> sets,
     @Default(1) int weekNumber,

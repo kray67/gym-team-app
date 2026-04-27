@@ -164,6 +164,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
           targetRpe: last?.targetRpe,
           targetRpeMax: last?.targetRpeMax,
           weightIncrement: last?.weightIncrement,
+          targetDurationSecs: last?.targetDurationSecs,
           isWarmup: false,
         );
         return e.copyWith(sets: [...e.sets, newSet]);
@@ -200,6 +201,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
     required double? targetRpe,
     required double? targetRpeMax,
     double? weightIncrement,
+    int? targetDurationSecs,
   }) {
     final s = state;
     if (s == null) return;
@@ -209,7 +211,6 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
         return e.copyWith(
           sets: e.sets.map((set) {
             if (set.id != setId) return set;
-            // Construct new instance directly so null values are written (not skipped by copyWith)
             return PlanEditorSet(
               id: set.id,
               setNumber: set.setNumber,
@@ -220,6 +221,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
               targetRpeMax: targetRpeMax,
               isWarmup: set.isWarmup,
               weightIncrement: weightIncrement,
+              targetDurationSecs: targetDurationSecs,
             );
           }).toList(),
         );
@@ -509,6 +511,8 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
             'is_warmup': set.isWarmup,
             if (set.weightIncrement != null)
               'weight_increment': set.weightIncrement,
+            if (set.targetDurationSecs != null)
+              'target_duration_secs': set.targetDurationSecs,
           });
         }
       }

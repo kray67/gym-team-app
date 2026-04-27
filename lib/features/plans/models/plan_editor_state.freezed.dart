@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 mixin _$PlanEditorSet {
 
  String get id; int get setNumber; int? get targetReps; int? get targetRepsMax; double? get targetWeight;// % 1RM value
- double? get targetRpe; double? get targetRpeMax; bool get isWarmup; double? get weightIncrement;
+ double? get targetRpe; double? get targetRpeMax; bool get isWarmup; double? get weightIncrement; int? get targetDurationSecs;
 /// Create a copy of PlanEditorSet
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $PlanEditorSetCopyWith<PlanEditorSet> get copyWith => _$PlanEditorSetCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanEditorSet&&(identical(other.id, id) || other.id == id)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.targetReps, targetReps) || other.targetReps == targetReps)&&(identical(other.targetRepsMax, targetRepsMax) || other.targetRepsMax == targetRepsMax)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.targetRpe, targetRpe) || other.targetRpe == targetRpe)&&(identical(other.targetRpeMax, targetRpeMax) || other.targetRpeMax == targetRpeMax)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.weightIncrement, weightIncrement) || other.weightIncrement == weightIncrement));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanEditorSet&&(identical(other.id, id) || other.id == id)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.targetReps, targetReps) || other.targetReps == targetReps)&&(identical(other.targetRepsMax, targetRepsMax) || other.targetRepsMax == targetRepsMax)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.targetRpe, targetRpe) || other.targetRpe == targetRpe)&&(identical(other.targetRpeMax, targetRpeMax) || other.targetRpeMax == targetRpeMax)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.weightIncrement, weightIncrement) || other.weightIncrement == weightIncrement)&&(identical(other.targetDurationSecs, targetDurationSecs) || other.targetDurationSecs == targetDurationSecs));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,setNumber,targetReps,targetRepsMax,targetWeight,targetRpe,targetRpeMax,isWarmup,weightIncrement);
+int get hashCode => Object.hash(runtimeType,id,setNumber,targetReps,targetRepsMax,targetWeight,targetRpe,targetRpeMax,isWarmup,weightIncrement,targetDurationSecs);
 
 @override
 String toString() {
-  return 'PlanEditorSet(id: $id, setNumber: $setNumber, targetReps: $targetReps, targetRepsMax: $targetRepsMax, targetWeight: $targetWeight, targetRpe: $targetRpe, targetRpeMax: $targetRpeMax, isWarmup: $isWarmup, weightIncrement: $weightIncrement)';
+  return 'PlanEditorSet(id: $id, setNumber: $setNumber, targetReps: $targetReps, targetRepsMax: $targetRepsMax, targetWeight: $targetWeight, targetRpe: $targetRpe, targetRpeMax: $targetRpeMax, isWarmup: $isWarmup, weightIncrement: $weightIncrement, targetDurationSecs: $targetDurationSecs)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $PlanEditorSetCopyWith<$Res>  {
   factory $PlanEditorSetCopyWith(PlanEditorSet value, $Res Function(PlanEditorSet) _then) = _$PlanEditorSetCopyWithImpl;
 @useResult
 $Res call({
- String id, int setNumber, int? targetReps, int? targetRepsMax, double? targetWeight, double? targetRpe, double? targetRpeMax, bool isWarmup, double? weightIncrement
+ String id, int setNumber, int? targetReps, int? targetRepsMax, double? targetWeight, double? targetRpe, double? targetRpeMax, bool isWarmup, double? weightIncrement, int? targetDurationSecs
 });
 
 
@@ -63,7 +63,7 @@ class _$PlanEditorSetCopyWithImpl<$Res>
 
 /// Create a copy of PlanEditorSet
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? setNumber = null,Object? targetReps = freezed,Object? targetRepsMax = freezed,Object? targetWeight = freezed,Object? targetRpe = freezed,Object? targetRpeMax = freezed,Object? isWarmup = null,Object? weightIncrement = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? setNumber = null,Object? targetReps = freezed,Object? targetRepsMax = freezed,Object? targetWeight = freezed,Object? targetRpe = freezed,Object? targetRpeMax = freezed,Object? isWarmup = null,Object? weightIncrement = freezed,Object? targetDurationSecs = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,setNumber: null == setNumber ? _self.setNumber : setNumber // ignore: cast_nullable_to_non_nullable
@@ -74,7 +74,8 @@ as double?,targetRpe: freezed == targetRpe ? _self.targetRpe : targetRpe // igno
 as double?,targetRpeMax: freezed == targetRpeMax ? _self.targetRpeMax : targetRpeMax // ignore: cast_nullable_to_non_nullable
 as double?,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
 as bool,weightIncrement: freezed == weightIncrement ? _self.weightIncrement : weightIncrement // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,targetDurationSecs: freezed == targetDurationSecs ? _self.targetDurationSecs : targetDurationSecs // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -159,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int setNumber,  int? targetReps,  int? targetRepsMax,  double? targetWeight,  double? targetRpe,  double? targetRpeMax,  bool isWarmup,  double? weightIncrement)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int setNumber,  int? targetReps,  int? targetRepsMax,  double? targetWeight,  double? targetRpe,  double? targetRpeMax,  bool isWarmup,  double? weightIncrement,  int? targetDurationSecs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlanEditorSet() when $default != null:
-return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement);case _:
+return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement,_that.targetDurationSecs);case _:
   return orElse();
 
 }
@@ -180,10 +181,10 @@ return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int setNumber,  int? targetReps,  int? targetRepsMax,  double? targetWeight,  double? targetRpe,  double? targetRpeMax,  bool isWarmup,  double? weightIncrement)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int setNumber,  int? targetReps,  int? targetRepsMax,  double? targetWeight,  double? targetRpe,  double? targetRpeMax,  bool isWarmup,  double? weightIncrement,  int? targetDurationSecs)  $default,) {final _that = this;
 switch (_that) {
 case _PlanEditorSet():
-return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement);case _:
+return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement,_that.targetDurationSecs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +201,10 @@ return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int setNumber,  int? targetReps,  int? targetRepsMax,  double? targetWeight,  double? targetRpe,  double? targetRpeMax,  bool isWarmup,  double? weightIncrement)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int setNumber,  int? targetReps,  int? targetRepsMax,  double? targetWeight,  double? targetRpe,  double? targetRpeMax,  bool isWarmup,  double? weightIncrement,  int? targetDurationSecs)?  $default,) {final _that = this;
 switch (_that) {
 case _PlanEditorSet() when $default != null:
-return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement);case _:
+return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_that.targetWeight,_that.targetRpe,_that.targetRpeMax,_that.isWarmup,_that.weightIncrement,_that.targetDurationSecs);case _:
   return null;
 
 }
@@ -215,7 +216,7 @@ return $default(_that.id,_that.setNumber,_that.targetReps,_that.targetRepsMax,_t
 
 
 class _PlanEditorSet implements PlanEditorSet {
-  const _PlanEditorSet({required this.id, required this.setNumber, this.targetReps, this.targetRepsMax, this.targetWeight, this.targetRpe, this.targetRpeMax, this.isWarmup = false, this.weightIncrement});
+  const _PlanEditorSet({required this.id, required this.setNumber, this.targetReps, this.targetRepsMax, this.targetWeight, this.targetRpe, this.targetRpeMax, this.isWarmup = false, this.weightIncrement, this.targetDurationSecs});
   
 
 @override final  String id;
@@ -228,6 +229,7 @@ class _PlanEditorSet implements PlanEditorSet {
 @override final  double? targetRpeMax;
 @override@JsonKey() final  bool isWarmup;
 @override final  double? weightIncrement;
+@override final  int? targetDurationSecs;
 
 /// Create a copy of PlanEditorSet
 /// with the given fields replaced by the non-null parameter values.
@@ -239,16 +241,16 @@ _$PlanEditorSetCopyWith<_PlanEditorSet> get copyWith => __$PlanEditorSetCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanEditorSet&&(identical(other.id, id) || other.id == id)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.targetReps, targetReps) || other.targetReps == targetReps)&&(identical(other.targetRepsMax, targetRepsMax) || other.targetRepsMax == targetRepsMax)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.targetRpe, targetRpe) || other.targetRpe == targetRpe)&&(identical(other.targetRpeMax, targetRpeMax) || other.targetRpeMax == targetRpeMax)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.weightIncrement, weightIncrement) || other.weightIncrement == weightIncrement));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanEditorSet&&(identical(other.id, id) || other.id == id)&&(identical(other.setNumber, setNumber) || other.setNumber == setNumber)&&(identical(other.targetReps, targetReps) || other.targetReps == targetReps)&&(identical(other.targetRepsMax, targetRepsMax) || other.targetRepsMax == targetRepsMax)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.targetRpe, targetRpe) || other.targetRpe == targetRpe)&&(identical(other.targetRpeMax, targetRpeMax) || other.targetRpeMax == targetRpeMax)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.weightIncrement, weightIncrement) || other.weightIncrement == weightIncrement)&&(identical(other.targetDurationSecs, targetDurationSecs) || other.targetDurationSecs == targetDurationSecs));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,setNumber,targetReps,targetRepsMax,targetWeight,targetRpe,targetRpeMax,isWarmup,weightIncrement);
+int get hashCode => Object.hash(runtimeType,id,setNumber,targetReps,targetRepsMax,targetWeight,targetRpe,targetRpeMax,isWarmup,weightIncrement,targetDurationSecs);
 
 @override
 String toString() {
-  return 'PlanEditorSet(id: $id, setNumber: $setNumber, targetReps: $targetReps, targetRepsMax: $targetRepsMax, targetWeight: $targetWeight, targetRpe: $targetRpe, targetRpeMax: $targetRpeMax, isWarmup: $isWarmup, weightIncrement: $weightIncrement)';
+  return 'PlanEditorSet(id: $id, setNumber: $setNumber, targetReps: $targetReps, targetRepsMax: $targetRepsMax, targetWeight: $targetWeight, targetRpe: $targetRpe, targetRpeMax: $targetRpeMax, isWarmup: $isWarmup, weightIncrement: $weightIncrement, targetDurationSecs: $targetDurationSecs)';
 }
 
 
@@ -259,7 +261,7 @@ abstract mixin class _$PlanEditorSetCopyWith<$Res> implements $PlanEditorSetCopy
   factory _$PlanEditorSetCopyWith(_PlanEditorSet value, $Res Function(_PlanEditorSet) _then) = __$PlanEditorSetCopyWithImpl;
 @override @useResult
 $Res call({
- String id, int setNumber, int? targetReps, int? targetRepsMax, double? targetWeight, double? targetRpe, double? targetRpeMax, bool isWarmup, double? weightIncrement
+ String id, int setNumber, int? targetReps, int? targetRepsMax, double? targetWeight, double? targetRpe, double? targetRpeMax, bool isWarmup, double? weightIncrement, int? targetDurationSecs
 });
 
 
@@ -276,7 +278,7 @@ class __$PlanEditorSetCopyWithImpl<$Res>
 
 /// Create a copy of PlanEditorSet
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? setNumber = null,Object? targetReps = freezed,Object? targetRepsMax = freezed,Object? targetWeight = freezed,Object? targetRpe = freezed,Object? targetRpeMax = freezed,Object? isWarmup = null,Object? weightIncrement = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? setNumber = null,Object? targetReps = freezed,Object? targetRepsMax = freezed,Object? targetWeight = freezed,Object? targetRpe = freezed,Object? targetRpeMax = freezed,Object? isWarmup = null,Object? weightIncrement = freezed,Object? targetDurationSecs = freezed,}) {
   return _then(_PlanEditorSet(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,setNumber: null == setNumber ? _self.setNumber : setNumber // ignore: cast_nullable_to_non_nullable
@@ -287,7 +289,8 @@ as double?,targetRpe: freezed == targetRpe ? _self.targetRpe : targetRpe // igno
 as double?,targetRpeMax: freezed == targetRpeMax ? _self.targetRpeMax : targetRpeMax // ignore: cast_nullable_to_non_nullable
 as double?,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
 as bool,weightIncrement: freezed == weightIncrement ? _self.weightIncrement : weightIncrement // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,targetDurationSecs: freezed == targetDurationSecs ? _self.targetDurationSecs : targetDurationSecs // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -297,7 +300,7 @@ as double?,
 /// @nodoc
 mixin _$PlanEditorExercise {
 
- String get id; Exercise get exercise; String get goalType;// 'reps' | 'reps_range' | 'amrap'
+ String get id; Exercise get exercise; String get goalType;// 'reps' | 'reps_range' | 'amrap' | 'time'
  String get weightType;// 'percent_1rm' | 'rpe' | 'rpe_range'
  List<PlanEditorSet> get sets; int get weekNumber; int get sessionNumber; String? get supersetGroupId;
 /// Create a copy of PlanEditorExercise
@@ -513,7 +516,7 @@ class _PlanEditorExercise implements PlanEditorExercise {
 @override final  String id;
 @override final  Exercise exercise;
 @override@JsonKey() final  String goalType;
-// 'reps' | 'reps_range' | 'amrap'
+// 'reps' | 'reps_range' | 'amrap' | 'time'
 @override@JsonKey() final  String weightType;
 // 'percent_1rm' | 'rpe' | 'rpe_range'
  final  List<PlanEditorSet> _sets;

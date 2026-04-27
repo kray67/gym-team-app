@@ -285,7 +285,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         final last = e.sets.isNotEmpty ? e.sets.last : null;
         final workCount = e.sets.where((s) => !s.isWarmup).length;
         return e.copyWith(
-            sets: [...e.sets, _newSet(workCount + 1, weightKg: last?.weightKg, reps: last?.reps)]);
+            sets: [...e.sets, _newSet(workCount + 1, weightKg: last?.weightKg, reps: last?.reps, durationSecs: last?.durationSecs, distanceM: last?.distanceM)]);
       }).toList(),
     );
   }
@@ -296,6 +296,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     int? reps,
     double? weightKg,
     double? rpe,
+    int? durationSecs,
+    double? distanceM,
   }) {
     final current = state;
     if (current == null) return;
@@ -309,6 +311,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
               reps: reps ?? s.reps,
               weightKg: weightKg ?? s.weightKg,
               rpe: rpe ?? s.rpe,
+              durationSecs: durationSecs ?? s.durationSecs,
+              distanceM: distanceM ?? s.distanceM,
             );
           }).toList(),
         );
@@ -391,6 +395,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
               'reps': set.reps,
               'weight_kg': set.weightKg,
               if (set.rpe != null) 'rpe': set.rpe,
+              if (set.durationSecs != null) 'duration_secs': set.durationSecs,
+              if (set.distanceM != null) 'distance_m': set.distanceM,
               'completed': set.completed,
               'is_warmup': set.isWarmup,
             })
@@ -744,6 +750,15 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
   static String? _buildTargetText(dynamic pe, dynamic s, double? resolvedWeight) {
     final goalType = pe.goalType as String;
     final weightType = pe.weightType as String;
+
+    // Time-based goal: show formatted duration, no intensity.
+    if (goalType == 'time') {
+      final secs = s.targetDurationSecs as int?;
+      if (secs == null) return null;
+      final m = secs ~/ 60;
+      final sec = secs % 60;
+      return '${m.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
+    }
     final targetReps = s.targetReps as int?;
     final targetRepsMax = s.targetRepsMax as int?;
     final targetWeight = s.targetWeight as double?; // % 1RM
@@ -838,6 +853,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
           {double? weightKg,
           int? reps,
           double? rpe,
+          int? durationSecs,
+          double? distanceM,
           String? targetText,
           bool isWarmup = false}) =>
       ActiveSetEntry(
@@ -846,6 +863,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
           weightKg: weightKg,
           reps: reps,
           rpe: rpe,
+          durationSecs: durationSecs,
+          distanceM: distanceM,
           targetText: targetText,
           isWarmup: isWarmup);
 }

@@ -7,7 +7,7 @@ part of 'custom_exercises_notifier.dart';
 // **************************************************************************
 
 String _$customExercisesNotifierHash() =>
-    r'ef1d975d1cc8e3ad0dabb4768ff97fb32932f8f2';
+    r'0c839d8bd0fae6b7bf0cd2637c45a32cecdf1208';
 
 /// See also [CustomExercisesNotifier].
 @ProviderFor(CustomExercisesNotifier)

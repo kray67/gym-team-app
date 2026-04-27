@@ -13,6 +13,7 @@ abstract class Exercise with _$Exercise {
     @Default([]) List<String> muscles,
     @JsonKey(name: 'is_custom') required bool isCustom,
     @JsonKey(name: 'created_by') String? createdBy,
+    @JsonKey(name: 'tracking_type') @Default('weight_reps') String trackingType,
   }) = _Exercise;
 
   factory Exercise.fromJson(Map<String, dynamic> json) =>

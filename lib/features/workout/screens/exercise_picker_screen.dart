@@ -59,7 +59,10 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
           e.muscleGroup.toLowerCase().contains(_query.toLowerCase());
       return matchesMuscle && matchesEquipment && matchesQuery;
     }).toList();
-    result.sort((a, b) => a.name.compareTo(b.name));
+    result.sort((a, b) {
+      if (a.isCustom != b.isCustom) return a.isCustom ? -1 : 1;
+      return a.name.compareTo(b.name);
+    });
     return result;
   }
 
@@ -198,7 +201,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                         initialValue: _selectedMuscle,
                         isDense: true,
                         decoration: const InputDecoration(
-                          labelText: 'Muscle',
+                          labelText: 'Muscle Group',
                           isDense: true,
                           contentPadding:
                               EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -316,31 +319,13 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // Selection indicator
-                                if (widget.singleSelect)
-                                  const Icon(Icons.add_circle_outline, size: 20)
-                                else if (isSelected)
-                                  CircleAvatar(
-                                    radius: 12,
-                                    backgroundColor: Colors.green,
-                                    child: Text(
-                                      '${selIdx + 1}',
-                                      style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  )
-                                else
-                                  const Icon(Icons.add_circle_outline,
-                                      size: 20),
                                 // Edit/delete for own custom exercises
-                                if (isOwnCustom) ...[
-                                  const SizedBox(width: 4),
+                                if (isOwnCustom)
                                   PopupMenuButton<String>(
                                     padding: EdgeInsets.zero,
+                                    iconSize: 18,
                                     icon: const Icon(Icons.more_vert,
-                                        size: 18, color: Colors.white38),
+                                        color: Colors.white38),
                                     onSelected: (v) async {
                                       if (v == 'edit') {
                                         await showExerciseFormSheet(context,
@@ -360,7 +345,24 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                                       ),
                                     ],
                                   ),
-                                ],
+                                // Selection indicator — always rightmost
+                                if (widget.singleSelect)
+                                  const Icon(Icons.add_circle_outline, size: 20)
+                                else if (isSelected)
+                                  CircleAvatar(
+                                    radius: 12,
+                                    backgroundColor: Colors.green,
+                                    child: Text(
+                                      '${selIdx + 1}',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  )
+                                else
+                                  const Icon(Icons.add_circle_outline,
+                                      size: 20),
                               ],
                             ),
                             onTap: () {

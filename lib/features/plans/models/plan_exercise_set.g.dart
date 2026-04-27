@@ -18,6 +18,7 @@ _PlanExerciseSet _$PlanExerciseSetFromJson(Map<String, dynamic> json) =>
       targetRpeMax: (json['target_rpe_max'] as num?)?.toDouble(),
       isWarmup: json['is_warmup'] as bool? ?? false,
       weightIncrement: (json['weight_increment'] as num?)?.toDouble(),
+      targetDurationSecs: (json['target_duration_secs'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$PlanExerciseSetToJson(_PlanExerciseSet instance) =>
@@ -32,4 +33,5 @@ Map<String, dynamic> _$PlanExerciseSetToJson(_PlanExerciseSet instance) =>
       'target_rpe_max': instance.targetRpeMax,
       'is_warmup': instance.isWarmup,
       'weight_increment': instance.weightIncrement,
+      'target_duration_secs': instance.targetDurationSecs,
     };
