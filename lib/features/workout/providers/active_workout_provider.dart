@@ -581,7 +581,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     final sessionExercises = plan.exercises
         .where((pe) =>
             pe.weekNumber == weekNumber && pe.sessionNumber == dayNumber)
-        .toList();
+        .toList()
+      ..sort((a, b) => a.position.compareTo(b.position));
 
     // Pre-fetch previous session weights for progressive load types.
     // Map of exerciseId → list of weights (per set, ordered by set_number).
@@ -650,9 +651,11 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
           activeWeightType = pe.weightType; // percent_1rm or kg
         }
 
-        final sets = pe.sets.isEmpty
+        final sortedSets = pe.sets.toList()
+          ..sort((a, b) => a.setNumber.compareTo(b.setNumber));
+        final sets = sortedSets.isEmpty
             ? [_newSet(1)]
-            : pe.sets.asMap().entries.map((entry) {
+            : sortedSets.asMap().entries.map((entry) {
                 final idx = entry.key;
                 final s = entry.value;
                 double? weight;
