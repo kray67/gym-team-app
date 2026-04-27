@@ -1495,7 +1495,7 @@ class _TimeField extends StatelessWidget {
         color: completed ? Colors.green : Colors.white,
       ),
       decoration: InputDecoration(
-        hintText: '0:00',
+        hintText: 'm:ss',
         hintStyle: const TextStyle(color: Colors.white24),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),

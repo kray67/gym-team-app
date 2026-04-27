@@ -1436,7 +1436,7 @@ class _PlanTimeField extends StatelessWidget {
       ],
       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
       decoration: InputDecoration(
-        hintText: '0:00',
+        hintText: 'm:ss',
         hintStyle: const TextStyle(color: Colors.white24),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
