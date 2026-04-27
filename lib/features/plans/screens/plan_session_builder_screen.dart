@@ -596,7 +596,8 @@ class SessionEditorScreen extends ConsumerWidget {
             s.targetRepsMax != null ||
             s.targetWeight != null ||
             s.targetRpe != null ||
-            s.weightIncrement != null));
+            s.weightIncrement != null ||
+            s.targetDurationSecs != null));
 
     return Scaffold(
       appBar: AppBar(
