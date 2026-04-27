@@ -17,6 +17,8 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
   void startNew() => state = const PlanEditorState();
 
   void startEdit(WorkoutPlan plan) {
+    final sortedExercises = plan.exercises.toList()
+      ..sort((a, b) => a.position.compareTo(b.position));
     state = PlanEditorState(
       planId: plan.id,
       title: plan.title,
@@ -27,29 +29,34 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
       avgDurationMins: plan.avgDurationMins ?? 60,
       difficulty: plan.difficulty ?? 'intermediate',
       equipment: plan.equipment ?? 'commercial_gym',
-      exercises: plan.exercises
-          .map((pe) => PlanEditorExercise(
-                id: pe.id,
-                exercise: pe.exercise!,
-                goalType: pe.goalType,
-                weightType: pe.weightType,
-                weekNumber: pe.weekNumber,
-                sessionNumber: pe.sessionNumber,
-                supersetGroupId: pe.supersetGroupId,
-                sets: pe.sets
-                    .map((s) => PlanEditorSet(
-                          id: s.id,
-                          setNumber: s.setNumber,
-                          targetReps: s.targetReps,
-                          targetRepsMax: s.targetRepsMax,
-                          targetWeight: s.targetWeight,
-                          targetRpe: s.targetRpe,
-                          targetRpeMax: s.targetRpeMax,
-                          isWarmup: s.isWarmup,
-                          weightIncrement: s.weightIncrement,
-                        ))
-                    .toList(),
-              ))
+      exercises: sortedExercises
+          .map((pe) {
+            final sortedSets = pe.sets.toList()
+              ..sort((a, b) => a.setNumber.compareTo(b.setNumber));
+            return PlanEditorExercise(
+              id: pe.id,
+              exercise: pe.exercise!,
+              goalType: pe.goalType,
+              weightType: pe.weightType,
+              weekNumber: pe.weekNumber,
+              sessionNumber: pe.sessionNumber,
+              supersetGroupId: pe.supersetGroupId,
+              sets: sortedSets
+                  .map((s) => PlanEditorSet(
+                        id: s.id,
+                        setNumber: s.setNumber,
+                        targetReps: s.targetReps,
+                        targetRepsMax: s.targetRepsMax,
+                        targetWeight: s.targetWeight,
+                        targetRpe: s.targetRpe,
+                        targetRpeMax: s.targetRpeMax,
+                        isWarmup: s.isWarmup,
+                        weightIncrement: s.weightIncrement,
+                        targetDurationSecs: s.targetDurationSecs,
+                      ))
+                  .toList(),
+            );
+          })
           .toList(),
     );
   }
@@ -75,7 +82,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
       id: _uuid.v4(),
       exercise: exercise,
       goalType: isTimeBased ? 'time' : 'reps',
-      weightType: 'percent_1rm',
+      weightType: 'rpe',
       weekNumber: weekNumber,
       sessionNumber: sessionNumber,
       sets: List.generate(
@@ -251,7 +258,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
                       .contains(ex.trackingType)
                   ? 'time'
                   : 'reps',
-              weightType: 'percent_1rm',
+              weightType: 'rpe',
               weekNumber: weekNumber,
               sessionNumber: sessionNumber,
               supersetGroupId: groupId,
