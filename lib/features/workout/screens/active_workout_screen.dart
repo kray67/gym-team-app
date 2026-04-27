@@ -19,6 +19,39 @@ const _kPrevWPlan = 52.0;
 const _kKgWPlan = 56.0;
 const _kRepsWPlan = 52.0;
 
+// ── Time helpers (shared by _SetRowState and _TimeField) ─────────────────────
+
+const _kTimeTooltip =
+    'Accepted formats:\n• 15  (seconds)\n• 1:30  (min:sec)\n• 1:30:00  (hr:min:sec)';
+
+String _fmtDurationTime(int? secs) {
+  if (secs == null) return '';
+  final d = Duration(seconds: secs);
+  final h = d.inHours;
+  final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return h > 0 ? '$h:$m:$s' : '${d.inMinutes.remainder(60)}:$s';
+}
+
+int? _parseDurationTime(String text) {
+  if (text.isEmpty) return null;
+  if (text.contains(':')) {
+    final parts = text.split(':');
+    if (parts.length == 2) {
+      final m = int.tryParse(parts[0]);
+      final s = int.tryParse(parts[1]);
+      if (m != null && s != null) return m * 60 + s;
+    } else if (parts.length == 3) {
+      final h = int.tryParse(parts[0]);
+      final m = int.tryParse(parts[1]);
+      final s = int.tryParse(parts[2]);
+      if (h != null && m != null && s != null) return h * 3600 + m * 60 + s;
+    }
+    return null;
+  }
+  return int.tryParse(text); // plain seconds: "15" → 15s
+}
+
 // Superset colors — one per group, cycling
 const _kSupersetColors = [
   Color(0xFF4CAF50), // green
@@ -913,17 +946,17 @@ class _TableHeader extends StatelessWidget {
         return [
           SizedBox(width: colW, child: const Text('KG', style: _style, textAlign: TextAlign.center)),
           const SizedBox(width: 6),
-          SizedBox(width: colW, child: const Text('TIME', style: _style, textAlign: TextAlign.center)),
+          SizedBox(width: colW, child: const Tooltip(message: _kTimeTooltip, child: Text('TIME', style: _style, textAlign: TextAlign.center))),
         ];
       case 'time':
         return [
-          SizedBox(width: colW, child: const Text('TIME', style: _style, textAlign: TextAlign.center)),
+          SizedBox(width: colW, child: const Tooltip(message: _kTimeTooltip, child: Text('TIME', style: _style, textAlign: TextAlign.center))),
         ];
       case 'distance_time':
         return [
           SizedBox(width: colW, child: const Text('KM', style: _style, textAlign: TextAlign.center)),
           const SizedBox(width: 6),
-          SizedBox(width: colW, child: const Text('TIME', style: _style, textAlign: TextAlign.center)),
+          SizedBox(width: colW, child: const Tooltip(message: _kTimeTooltip, child: Text('TIME', style: _style, textAlign: TextAlign.center))),
         ];
       default: // weight_reps
         return [
@@ -1009,33 +1042,8 @@ class _SetRowState extends ConsumerState<_SetRow> {
   late final TextEditingController _durationCtrl;
   late final TextEditingController _distanceCtrl;
 
-  static String _fmtDuration(int? secs) {
-    if (secs == null) return '';
-    final d = Duration(seconds: secs);
-    final h = d.inHours;
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return h > 0 ? '$h:$m:$s' : '${d.inMinutes.remainder(60)}:$s';
-  }
-
-  static int? _parseDuration(String text) {
-    if (text.isEmpty) return null;
-    if (text.contains(':')) {
-      final parts = text.split(':');
-      if (parts.length == 2) {
-        final m = int.tryParse(parts[0]);
-        final s = int.tryParse(parts[1]);
-        if (m != null && s != null) return m * 60 + s;
-      } else if (parts.length == 3) {
-        final h = int.tryParse(parts[0]);
-        final m = int.tryParse(parts[1]);
-        final s = int.tryParse(parts[2]);
-        if (h != null && m != null && s != null) return h * 3600 + m * 60 + s;
-      }
-      return null;
-    }
-    return int.tryParse(text);
-  }
+  static String _fmtDuration(int? secs) => _fmtDurationTime(secs);
+  static int? _parseDuration(String text) => _parseDurationTime(text);
 
   Future<void> _showSetMenu() async {
     final set = widget.set;
@@ -1467,9 +1475,9 @@ class _NumField extends StatelessWidget {
   }
 }
 
-// ── Time input field (MM:SS) ──────────────────────────────────────────────────
+// ── Time input field ──────────────────────────────────────────────────────────
 
-class _TimeField extends StatelessWidget {
+class _TimeField extends StatefulWidget {
   final TextEditingController controller;
   final bool completed;
   final ValueChanged<String> onChanged;
@@ -1481,9 +1489,44 @@ class _TimeField extends StatelessWidget {
   });
 
   @override
+  State<_TimeField> createState() => _TimeFieldState();
+}
+
+class _TimeFieldState extends State<_TimeField> {
+  late final FocusNode _focus;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus = FocusNode();
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _reformat();
+    });
+  }
+
+  void _reformat() {
+    final secs = _parseDurationTime(widget.controller.text);
+    if (secs == null) return;
+    final formatted = _fmtDurationTime(secs);
+    if (widget.controller.text != formatted) {
+      widget.controller.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: controller,
+      controller: widget.controller,
+      focusNode: _focus,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
       inputFormatters: [
@@ -1492,10 +1535,10 @@ class _TimeField extends StatelessWidget {
       style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: completed ? Colors.green : Colors.white,
+        color: widget.completed ? Colors.green : Colors.white,
       ),
       decoration: InputDecoration(
-        hintText: 'm:ss',
+        hintText: '0:00',
         hintStyle: const TextStyle(color: Colors.white24),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -1510,12 +1553,12 @@ class _TimeField extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(
-              color: completed ? Colors.green : Theme.of(context).colorScheme.primary),
+              color: widget.completed ? Colors.green : Theme.of(context).colorScheme.primary),
         ),
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.05),
       ),
-      onChanged: onChanged,
+      onChanged: widget.onChanged,
     );
   }
 }

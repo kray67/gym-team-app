@@ -7,6 +7,39 @@ import 'package:gym_team/features/plans/providers/plan_editor_provider.dart';
 import 'package:gym_team/features/plans/providers/plans_provider.dart';
 import 'package:gym_team/features/workout/screens/exercise_picker_screen.dart';
 
+// ── Time helpers ──────────────────────────────────────────────────────────────
+
+const _kTimeTooltip =
+    'Accepted formats:\n• 15  (seconds)\n• 1:30  (min:sec)\n• 1:30:00  (hr:min:sec)';
+
+String _fmtDurationPlan(int? secs) {
+  if (secs == null) return '';
+  final d = Duration(seconds: secs);
+  final h = d.inHours;
+  final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return h > 0 ? '$h:$m:$s' : '${d.inMinutes.remainder(60)}:$s';
+}
+
+int? _parseDurationPlan(String text) {
+  if (text.isEmpty) return null;
+  if (text.contains(':')) {
+    final parts = text.split(':');
+    if (parts.length == 2) {
+      final m = int.tryParse(parts[0]);
+      final s = int.tryParse(parts[1]);
+      if (m != null && s != null) return m * 60 + s;
+    } else if (parts.length == 3) {
+      final h = int.tryParse(parts[0]);
+      final m = int.tryParse(parts[1]);
+      final s = int.tryParse(parts[2]);
+      if (h != null && m != null && s != null) return h * 3600 + m * 60 + s;
+    }
+    return null;
+  }
+  return int.tryParse(text);
+}
+
 // Column widths — mirrors active_workout_screen
 const _kSetW = 32.0;
 
@@ -972,7 +1005,7 @@ class _PlanTableHeader extends StatelessWidget {
           if (goalType == 'time') ...[
             SizedBox(
               width: _kInputW * 1.5,
-              child: const Text('TIME (MM:SS)', style: _style, textAlign: TextAlign.center),
+              child: const Tooltip(message: _kTimeTooltip, child: Text('TIME', style: _style, textAlign: TextAlign.center)),
             ),
             const SizedBox(width: 6),
           ] else if (goalType == 'reps') ...[
@@ -1065,26 +1098,8 @@ class _PlanSetRowState extends ConsumerState<_PlanSetRow> {
   late final TextEditingController _incrCtrl;
   late final TextEditingController _durationCtrl;
 
-  static String _fmtDuration(int? secs) {
-    if (secs == null) return '';
-    final m = secs ~/ 60;
-    final s = secs % 60;
-    return '$m:${s.toString().padLeft(2, '0')}';
-  }
-
-  static int? _parseDuration(String text) {
-    if (text.isEmpty) return null;
-    if (text.contains(':')) {
-      final parts = text.split(':');
-      if (parts.length == 2) {
-        final m = int.tryParse(parts[0]);
-        final s = int.tryParse(parts[1]);
-        if (m != null && s != null) return m * 60 + s;
-      }
-      return null;
-    }
-    return int.tryParse(text);
-  }
+  static String _fmtDuration(int? secs) => _fmtDurationPlan(secs);
+  static int? _parseDuration(String text) => _parseDurationPlan(text);
 
   @override
   void initState() {
@@ -1414,9 +1429,9 @@ class _PlanNumField extends StatelessWidget {
   }
 }
 
-// ── Time input field (MM:SS) ──────────────────────────────────────────────────
+// ── Time input field ──────────────────────────────────────────────────────────
 
-class _PlanTimeField extends StatelessWidget {
+class _PlanTimeField extends StatefulWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
 
@@ -1426,9 +1441,44 @@ class _PlanTimeField extends StatelessWidget {
   });
 
   @override
+  State<_PlanTimeField> createState() => _PlanTimeFieldState();
+}
+
+class _PlanTimeFieldState extends State<_PlanTimeField> {
+  late final FocusNode _focus;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus = FocusNode();
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _reformat();
+    });
+  }
+
+  void _reformat() {
+    final secs = _parseDurationPlan(widget.controller.text);
+    if (secs == null) return;
+    final formatted = _fmtDurationPlan(secs);
+    if (widget.controller.text != formatted) {
+      widget.controller.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: controller,
+      controller: widget.controller,
+      focusNode: _focus,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.numberWithOptions(decimal: false, signed: false),
       inputFormatters: [
@@ -1436,7 +1486,7 @@ class _PlanTimeField extends StatelessWidget {
       ],
       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
       decoration: InputDecoration(
-        hintText: 'm:ss',
+        hintText: '0:00',
         hintStyle: const TextStyle(color: Colors.white24),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -1455,7 +1505,7 @@ class _PlanTimeField extends StatelessWidget {
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.05),
       ),
-      onChanged: onChanged,
+      onChanged: widget.onChanged,
     );
   }
 }
