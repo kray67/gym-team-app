@@ -186,44 +186,50 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
             ),
 
             const SizedBox(height: 16),
-            Text('Difficulty',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: Colors.white54)),
-            const SizedBox(height: 6),
-            SegmentedButton<String>(
-              segments: List.generate(
-                _difficultyOptions.length,
-                (i) => ButtonSegment(
-                    value: _difficultyOptions[i],
-                    label: Text(_difficultyLabels[i])),
+            InputDecorator(
+              decoration: const InputDecoration(labelText: 'Difficulty'),
+              child: DropdownButton<String>(
+                value: s.difficulty,
+                isExpanded: true,
+                underline: const SizedBox(),
+                isDense: true,
+                items: List.generate(
+                  _difficultyOptions.length,
+                  (i) => DropdownMenuItem(
+                      value: _difficultyOptions[i],
+                      child: Text(_difficultyLabels[i])),
+                ),
+                onChanged: (v) {
+                  if (v != null) {
+                    ref
+                        .read(planEditorNotifierProvider.notifier)
+                        .setDifficulty(v);
+                  }
+                },
               ),
-              selected: {s.difficulty},
-              onSelectionChanged: (v) => ref
-                  .read(planEditorNotifierProvider.notifier)
-                  .setDifficulty(v.first),
-              showSelectedIcon: false,
             ),
 
             const SizedBox(height: 16),
-            Text('Equipment',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: Colors.white54)),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              children: List.generate(
-                _equipmentOptions.length,
-                (i) => ChoiceChip(
-                  label: Text(_equipmentLabels[i]),
-                  selected: s.equipment == _equipmentOptions[i],
-                  onSelected: (_) => ref
-                      .read(planEditorNotifierProvider.notifier)
-                      .setEquipment(_equipmentOptions[i]),
+            InputDecorator(
+              decoration: const InputDecoration(labelText: 'Equipment'),
+              child: DropdownButton<String>(
+                value: s.equipment,
+                isExpanded: true,
+                underline: const SizedBox(),
+                isDense: true,
+                items: List.generate(
+                  _equipmentOptions.length,
+                  (i) => DropdownMenuItem(
+                      value: _equipmentOptions[i],
+                      child: Text(_equipmentLabels[i])),
                 ),
+                onChanged: (v) {
+                  if (v != null) {
+                    ref
+                        .read(planEditorNotifierProvider.notifier)
+                        .setEquipment(v);
+                  }
+                },
               ),
             ),
 

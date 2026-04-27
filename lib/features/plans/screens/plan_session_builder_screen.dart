@@ -640,6 +640,7 @@ class SessionEditorScreen extends ConsumerWidget {
               final colors = _computePlanSupersetColors(exercises);
               final slots = _buildPlanSlots(exercises);
               return ReorderableListView.builder(
+                buildDefaultDragHandles: false,
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 100),
                 itemCount: slots.length,
                 onReorder: (oi, ni) => ref
@@ -755,6 +756,7 @@ class _PlanSupersetWrapper extends ConsumerWidget {
             const Divider(height: 1, indent: 12, endIndent: 12),
             // ── Inner reorderable list ───────────────────────────────────
             ReorderableListView(
+              buildDefaultDragHandles: false,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               onReorder: (oi, ni) =>
@@ -869,81 +871,70 @@ class _ExercisePlanCard extends ConsumerWidget {
               const SizedBox(height: 10),
 
               // ── Goal type selector ──────────────────────────────────────
-              Row(
-                children: [
-                  const Text('Goal',
-                      style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(value: 'reps', label: Text('Reps')),
-                        ButtonSegment(value: 'reps_range', label: Text('Range')),
-                        ButtonSegment(value: 'amrap', label: Text('AMRAP')),
-                        ButtonSegment(value: 'time', label: Text('Time')),
-                      ],
-                      selected: {entry.goalType},
-                      onSelectionChanged: (v) => notifier.updateExerciseType(
-                          entry.id,
-                          goalType: v.first),
-                      showSelectedIcon: false,
-                      style: ButtonStyle(
-                        padding: WidgetStateProperty.all(
-                            const EdgeInsets.symmetric(horizontal: 4)),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    ),
-                  ),
-                ],
+              InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Goal',
+                  isDense: true,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                child: DropdownButton<String>(
+                  value: entry.goalType,
+                  isExpanded: true,
+                  underline: const SizedBox(),
+                  isDense: true,
+                  items: const [
+                    DropdownMenuItem(value: 'reps', child: Text('Reps')),
+                    DropdownMenuItem(
+                        value: 'reps_range', child: Text('Reps Range')),
+                    DropdownMenuItem(value: 'amrap', child: Text('AMRAP')),
+                    DropdownMenuItem(value: 'time', child: Text('Time')),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) {
+                      notifier.updateExerciseType(entry.id, goalType: v);
+                    }
+                  },
+                ),
               ),
               const SizedBox(height: 8),
 
               // ── Intensity type selector (hidden for time-based goal) ────
-              if (entry.goalType != 'time') Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Text('Intensity',
-                        style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600)),
+              if (entry.goalType != 'time') ...[
+                InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Intensity',
+                    isDense: true,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: [
-                        for (final opt in const [
-                          ('percent_1rm', '% 1RM'),
-                          ('rpe', 'RPE'),
-                          ('rpe_range', 'RPE Range'),
-                          ('prev_week_plus', 'Last Week +'),
-                          ('prev_session_plus', 'Last Session +'),
-                        ])
-                          ChoiceChip(
-                            label: Text(opt.$2,
-                                style: const TextStyle(fontSize: 11)),
-                            selected: entry.weightType == opt.$1,
-                            onSelected: (_) => notifier.updateExerciseType(
-                                entry.id,
-                                weightType: opt.$1),
-                            visualDensity: VisualDensity.compact,
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4),
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          ),
-                      ],
-                    ),
+                  child: DropdownButton<String>(
+                    value: entry.weightType,
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    isDense: true,
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'percent_1rm', child: Text('% 1RM')),
+                      DropdownMenuItem(value: 'rpe', child: Text('RPE')),
+                      DropdownMenuItem(
+                          value: 'rpe_range', child: Text('RPE Range')),
+                      DropdownMenuItem(
+                          value: 'prev_week_plus',
+                          child: Text('Last Week +')),
+                      DropdownMenuItem(
+                          value: 'prev_session_plus',
+                          child: Text('Last Session +')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) {
+                        notifier.updateExerciseType(entry.id, weightType: v);
+                      }
+                    },
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+              ],
               const SizedBox(height: 10),
 
               // ── Column headers ──────────────────────────────────────────
