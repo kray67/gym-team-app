@@ -870,71 +870,78 @@ class _ExercisePlanCard extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
 
-              // ── Goal type selector ──────────────────────────────────────
-              InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Goal',
-                  isDense: true,
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                child: DropdownButton<String>(
-                  value: entry.goalType,
-                  isExpanded: true,
-                  underline: const SizedBox(),
-                  isDense: true,
-                  items: const [
-                    DropdownMenuItem(value: 'reps', child: Text('Reps')),
-                    DropdownMenuItem(
-                        value: 'reps_range', child: Text('Reps Range')),
-                    DropdownMenuItem(value: 'amrap', child: Text('AMRAP')),
-                    DropdownMenuItem(value: 'time', child: Text('Time')),
+              // ── Goal + Intensity selectors ──────────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Goal',
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      child: DropdownButton<String>(
+                        value: entry.goalType,
+                        isExpanded: true,
+                        underline: const SizedBox(),
+                        isDense: true,
+                        items: const [
+                          DropdownMenuItem(value: 'reps', child: Text('Reps')),
+                          DropdownMenuItem(
+                              value: 'reps_range', child: Text('Reps Range')),
+                          DropdownMenuItem(value: 'amrap', child: Text('AMRAP')),
+                          DropdownMenuItem(value: 'time', child: Text('Time')),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            notifier.updateExerciseType(entry.id, goalType: v);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  if (entry.goalType != 'time') ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Intensity',
+                          isDense: true,
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        child: DropdownButton<String>(
+                          value: entry.weightType,
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          isDense: true,
+                          items: const [
+                            DropdownMenuItem(
+                                value: 'percent_1rm', child: Text('% 1RM')),
+                            DropdownMenuItem(value: 'rpe', child: Text('RPE')),
+                            DropdownMenuItem(
+                                value: 'rpe_range', child: Text('RPE Range')),
+                            DropdownMenuItem(
+                                value: 'prev_week_plus',
+                                child: Text('Last Week +')),
+                            DropdownMenuItem(
+                                value: 'prev_session_plus',
+                                child: Text('Last Session +')),
+                          ],
+                          onChanged: (v) {
+                            if (v != null) {
+                              notifier.updateExerciseType(entry.id,
+                                  weightType: v);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
                   ],
-                  onChanged: (v) {
-                    if (v != null) {
-                      notifier.updateExerciseType(entry.id, goalType: v);
-                    }
-                  },
-                ),
+                ],
               ),
               const SizedBox(height: 8),
-
-              // ── Intensity type selector (hidden for time-based goal) ────
-              if (entry.goalType != 'time') ...[
-                InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Intensity',
-                    isDense: true,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  child: DropdownButton<String>(
-                    value: entry.weightType,
-                    isExpanded: true,
-                    underline: const SizedBox(),
-                    isDense: true,
-                    items: const [
-                      DropdownMenuItem(
-                          value: 'percent_1rm', child: Text('% 1RM')),
-                      DropdownMenuItem(value: 'rpe', child: Text('RPE')),
-                      DropdownMenuItem(
-                          value: 'rpe_range', child: Text('RPE Range')),
-                      DropdownMenuItem(
-                          value: 'prev_week_plus',
-                          child: Text('Last Week +')),
-                      DropdownMenuItem(
-                          value: 'prev_session_plus',
-                          child: Text('Last Session +')),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) {
-                        notifier.updateExerciseType(entry.id, weightType: v);
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
               const SizedBox(height: 10),
 
               // ── Column headers ──────────────────────────────────────────

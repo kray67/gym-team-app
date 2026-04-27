@@ -166,71 +166,96 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
             ),
 
             const SizedBox(height: 16),
-            Text('Avg Duration',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: Colors.white54)),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              children: _durationOptions
-                  .map((d) => ChoiceChip(
-                        label: Text('$d min'),
-                        selected: s.avgDurationMins == d,
-                        onSelected: (_) => ref
-                            .read(planEditorNotifierProvider.notifier)
-                            .setAvgDurationMins(d),
-                      ))
-                  .toList(),
-            ),
-
-            const SizedBox(height: 16),
-            InputDecorator(
-              decoration: const InputDecoration(labelText: 'Difficulty'),
-              child: DropdownButton<String>(
-                value: s.difficulty,
-                isExpanded: true,
-                underline: const SizedBox(),
-                isDense: true,
-                items: List.generate(
-                  _difficultyOptions.length,
-                  (i) => DropdownMenuItem(
-                      value: _difficultyOptions[i],
-                      child: Text(_difficultyLabels[i])),
+            Row(
+              children: [
+                Expanded(
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Avg Duration',
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    child: DropdownButton<int>(
+                      value: s.avgDurationMins,
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      isDense: true,
+                      items: _durationOptions
+                          .map((d) => DropdownMenuItem(
+                              value: d, child: Text('$d min')))
+                          .toList(),
+                      onChanged: (v) {
+                        if (v != null) {
+                          ref
+                              .read(planEditorNotifierProvider.notifier)
+                              .setAvgDurationMins(v);
+                        }
+                      },
+                    ),
+                  ),
                 ),
-                onChanged: (v) {
-                  if (v != null) {
-                    ref
-                        .read(planEditorNotifierProvider.notifier)
-                        .setDifficulty(v);
-                  }
-                },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            InputDecorator(
-              decoration: const InputDecoration(labelText: 'Equipment'),
-              child: DropdownButton<String>(
-                value: s.equipment,
-                isExpanded: true,
-                underline: const SizedBox(),
-                isDense: true,
-                items: List.generate(
-                  _equipmentOptions.length,
-                  (i) => DropdownMenuItem(
-                      value: _equipmentOptions[i],
-                      child: Text(_equipmentLabels[i])),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Difficulty',
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    child: DropdownButton<String>(
+                      value: s.difficulty,
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      isDense: true,
+                      items: List.generate(
+                        _difficultyOptions.length,
+                        (i) => DropdownMenuItem(
+                            value: _difficultyOptions[i],
+                            child: Text(_difficultyLabels[i])),
+                      ),
+                      onChanged: (v) {
+                        if (v != null) {
+                          ref
+                              .read(planEditorNotifierProvider.notifier)
+                              .setDifficulty(v);
+                        }
+                      },
+                    ),
+                  ),
                 ),
-                onChanged: (v) {
-                  if (v != null) {
-                    ref
-                        .read(planEditorNotifierProvider.notifier)
-                        .setEquipment(v);
-                  }
-                },
-              ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Equipment',
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    child: DropdownButton<String>(
+                      value: s.equipment,
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      isDense: true,
+                      items: List.generate(
+                        _equipmentOptions.length,
+                        (i) => DropdownMenuItem(
+                            value: _equipmentOptions[i],
+                            child: Text(_equipmentLabels[i])),
+                      ),
+                      onChanged: (v) {
+                        if (v != null) {
+                          ref
+                              .read(planEditorNotifierProvider.notifier)
+                              .setEquipment(v);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 32),
