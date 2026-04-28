@@ -17,7 +17,7 @@ mixin _$PlanExercise {
 
  String get id;@JsonKey(name: 'plan_id') String get planId;@JsonKey(name: 'exercise_id') String get exerciseId; int get position;@JsonKey(name: 'goal_type') String get goalType;// 'reps' | 'reps_range' | 'amrap'
 @JsonKey(name: 'weight_type') String get weightType;// 'percent_1rm' | 'rpe' | 'rpe_range'
-@JsonKey(name: 'week_number') int get weekNumber;@JsonKey(name: 'session_number') int get sessionNumber;@JsonKey(name: 'exercises') Exercise? get exercise;@JsonKey(name: 'plan_exercise_sets') List<PlanExerciseSet> get sets;@JsonKey(name: 'superset_group_id') String? get supersetGroupId;
+@JsonKey(name: 'week_number') int get weekNumber;@JsonKey(name: 'session_number') int get sessionNumber;@JsonKey(name: 'exercises') Exercise? get exercise;@JsonKey(name: 'plan_exercise_sets') List<PlanExerciseSet> get sets;@JsonKey(name: 'superset_group_id') String? get supersetGroupId; String? get note;
 /// Create a copy of PlanExercise
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +30,16 @@ $PlanExerciseCopyWith<PlanExercise> get copyWith => _$PlanExerciseCopyWithImpl<P
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.planId, planId) || other.planId == planId)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.position, position) || other.position == position)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.sessionNumber, sessionNumber) || other.sessionNumber == sessionNumber)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&const DeepCollectionEquality().equals(other.sets, sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.planId, planId) || other.planId == planId)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.position, position) || other.position == position)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.sessionNumber, sessionNumber) || other.sessionNumber == sessionNumber)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&const DeepCollectionEquality().equals(other.sets, sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,planId,exerciseId,position,goalType,weightType,weekNumber,sessionNumber,exercise,const DeepCollectionEquality().hash(sets),supersetGroupId);
+int get hashCode => Object.hash(runtimeType,id,planId,exerciseId,position,goalType,weightType,weekNumber,sessionNumber,exercise,const DeepCollectionEquality().hash(sets),supersetGroupId,note);
 
 @override
 String toString() {
-  return 'PlanExercise(id: $id, planId: $planId, exerciseId: $exerciseId, position: $position, goalType: $goalType, weightType: $weightType, weekNumber: $weekNumber, sessionNumber: $sessionNumber, exercise: $exercise, sets: $sets, supersetGroupId: $supersetGroupId)';
+  return 'PlanExercise(id: $id, planId: $planId, exerciseId: $exerciseId, position: $position, goalType: $goalType, weightType: $weightType, weekNumber: $weekNumber, sessionNumber: $sessionNumber, exercise: $exercise, sets: $sets, supersetGroupId: $supersetGroupId, note: $note)';
 }
 
 
@@ -50,7 +50,7 @@ abstract mixin class $PlanExerciseCopyWith<$Res>  {
   factory $PlanExerciseCopyWith(PlanExercise value, $Res Function(PlanExercise) _then) = _$PlanExerciseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'plan_id') String planId,@JsonKey(name: 'exercise_id') String exerciseId, int position,@JsonKey(name: 'goal_type') String goalType,@JsonKey(name: 'weight_type') String weightType,@JsonKey(name: 'week_number') int weekNumber,@JsonKey(name: 'session_number') int sessionNumber,@JsonKey(name: 'exercises') Exercise? exercise,@JsonKey(name: 'plan_exercise_sets') List<PlanExerciseSet> sets,@JsonKey(name: 'superset_group_id') String? supersetGroupId
+ String id,@JsonKey(name: 'plan_id') String planId,@JsonKey(name: 'exercise_id') String exerciseId, int position,@JsonKey(name: 'goal_type') String goalType,@JsonKey(name: 'weight_type') String weightType,@JsonKey(name: 'week_number') int weekNumber,@JsonKey(name: 'session_number') int sessionNumber,@JsonKey(name: 'exercises') Exercise? exercise,@JsonKey(name: 'plan_exercise_sets') List<PlanExerciseSet> sets,@JsonKey(name: 'superset_group_id') String? supersetGroupId, String? note
 });
 
 
@@ -67,7 +67,7 @@ class _$PlanExerciseCopyWithImpl<$Res>
 
 /// Create a copy of PlanExercise
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? planId = null,Object? exerciseId = null,Object? position = null,Object? goalType = null,Object? weightType = null,Object? weekNumber = null,Object? sessionNumber = null,Object? exercise = freezed,Object? sets = null,Object? supersetGroupId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? planId = null,Object? exerciseId = null,Object? position = null,Object? goalType = null,Object? weightType = null,Object? weekNumber = null,Object? sessionNumber = null,Object? exercise = freezed,Object? sets = null,Object? supersetGroupId = freezed,Object? note = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,planId: null == planId ? _self.planId : planId // ignore: cast_nullable_to_non_nullable
@@ -80,6 +80,7 @@ as int,sessionNumber: null == sessionNumber ? _self.sessionNumber : sessionNumbe
 as int,exercise: freezed == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
 as Exercise?,sets: null == sets ? _self.sets : sets // ignore: cast_nullable_to_non_nullable
 as List<PlanExerciseSet>,supersetGroupId: freezed == supersetGroupId ? _self.supersetGroupId : supersetGroupId // ignore: cast_nullable_to_non_nullable
+as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -177,10 +178,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'plan_id')  String planId, @JsonKey(name: 'exercise_id')  String exerciseId,  int position, @JsonKey(name: 'goal_type')  String goalType, @JsonKey(name: 'weight_type')  String weightType, @JsonKey(name: 'week_number')  int weekNumber, @JsonKey(name: 'session_number')  int sessionNumber, @JsonKey(name: 'exercises')  Exercise? exercise, @JsonKey(name: 'plan_exercise_sets')  List<PlanExerciseSet> sets, @JsonKey(name: 'superset_group_id')  String? supersetGroupId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'plan_id')  String planId, @JsonKey(name: 'exercise_id')  String exerciseId,  int position, @JsonKey(name: 'goal_type')  String goalType, @JsonKey(name: 'weight_type')  String weightType, @JsonKey(name: 'week_number')  int weekNumber, @JsonKey(name: 'session_number')  int sessionNumber, @JsonKey(name: 'exercises')  Exercise? exercise, @JsonKey(name: 'plan_exercise_sets')  List<PlanExerciseSet> sets, @JsonKey(name: 'superset_group_id')  String? supersetGroupId,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlanExercise() when $default != null:
-return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goalType,_that.weightType,_that.weekNumber,_that.sessionNumber,_that.exercise,_that.sets,_that.supersetGroupId);case _:
+return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goalType,_that.weightType,_that.weekNumber,_that.sessionNumber,_that.exercise,_that.sets,_that.supersetGroupId,_that.note);case _:
   return orElse();
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goal
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'plan_id')  String planId, @JsonKey(name: 'exercise_id')  String exerciseId,  int position, @JsonKey(name: 'goal_type')  String goalType, @JsonKey(name: 'weight_type')  String weightType, @JsonKey(name: 'week_number')  int weekNumber, @JsonKey(name: 'session_number')  int sessionNumber, @JsonKey(name: 'exercises')  Exercise? exercise, @JsonKey(name: 'plan_exercise_sets')  List<PlanExerciseSet> sets, @JsonKey(name: 'superset_group_id')  String? supersetGroupId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'plan_id')  String planId, @JsonKey(name: 'exercise_id')  String exerciseId,  int position, @JsonKey(name: 'goal_type')  String goalType, @JsonKey(name: 'weight_type')  String weightType, @JsonKey(name: 'week_number')  int weekNumber, @JsonKey(name: 'session_number')  int sessionNumber, @JsonKey(name: 'exercises')  Exercise? exercise, @JsonKey(name: 'plan_exercise_sets')  List<PlanExerciseSet> sets, @JsonKey(name: 'superset_group_id')  String? supersetGroupId,  String? note)  $default,) {final _that = this;
 switch (_that) {
 case _PlanExercise():
-return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goalType,_that.weightType,_that.weekNumber,_that.sessionNumber,_that.exercise,_that.sets,_that.supersetGroupId);case _:
+return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goalType,_that.weightType,_that.weekNumber,_that.sessionNumber,_that.exercise,_that.sets,_that.supersetGroupId,_that.note);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -218,10 +219,10 @@ return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goal
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'plan_id')  String planId, @JsonKey(name: 'exercise_id')  String exerciseId,  int position, @JsonKey(name: 'goal_type')  String goalType, @JsonKey(name: 'weight_type')  String weightType, @JsonKey(name: 'week_number')  int weekNumber, @JsonKey(name: 'session_number')  int sessionNumber, @JsonKey(name: 'exercises')  Exercise? exercise, @JsonKey(name: 'plan_exercise_sets')  List<PlanExerciseSet> sets, @JsonKey(name: 'superset_group_id')  String? supersetGroupId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'plan_id')  String planId, @JsonKey(name: 'exercise_id')  String exerciseId,  int position, @JsonKey(name: 'goal_type')  String goalType, @JsonKey(name: 'weight_type')  String weightType, @JsonKey(name: 'week_number')  int weekNumber, @JsonKey(name: 'session_number')  int sessionNumber, @JsonKey(name: 'exercises')  Exercise? exercise, @JsonKey(name: 'plan_exercise_sets')  List<PlanExerciseSet> sets, @JsonKey(name: 'superset_group_id')  String? supersetGroupId,  String? note)?  $default,) {final _that = this;
 switch (_that) {
 case _PlanExercise() when $default != null:
-return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goalType,_that.weightType,_that.weekNumber,_that.sessionNumber,_that.exercise,_that.sets,_that.supersetGroupId);case _:
+return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goalType,_that.weightType,_that.weekNumber,_that.sessionNumber,_that.exercise,_that.sets,_that.supersetGroupId,_that.note);case _:
   return null;
 
 }
@@ -233,7 +234,7 @@ return $default(_that.id,_that.planId,_that.exerciseId,_that.position,_that.goal
 @JsonSerializable()
 
 class _PlanExercise implements PlanExercise {
-  const _PlanExercise({required this.id, @JsonKey(name: 'plan_id') required this.planId, @JsonKey(name: 'exercise_id') required this.exerciseId, required this.position, @JsonKey(name: 'goal_type') this.goalType = 'reps', @JsonKey(name: 'weight_type') this.weightType = 'percent_1rm', @JsonKey(name: 'week_number') this.weekNumber = 1, @JsonKey(name: 'session_number') this.sessionNumber = 1, @JsonKey(name: 'exercises') this.exercise, @JsonKey(name: 'plan_exercise_sets') final  List<PlanExerciseSet> sets = const [], @JsonKey(name: 'superset_group_id') this.supersetGroupId}): _sets = sets;
+  const _PlanExercise({required this.id, @JsonKey(name: 'plan_id') required this.planId, @JsonKey(name: 'exercise_id') required this.exerciseId, required this.position, @JsonKey(name: 'goal_type') this.goalType = 'reps', @JsonKey(name: 'weight_type') this.weightType = 'percent_1rm', @JsonKey(name: 'week_number') this.weekNumber = 1, @JsonKey(name: 'session_number') this.sessionNumber = 1, @JsonKey(name: 'exercises') this.exercise, @JsonKey(name: 'plan_exercise_sets') final  List<PlanExerciseSet> sets = const [], @JsonKey(name: 'superset_group_id') this.supersetGroupId, this.note}): _sets = sets;
   factory _PlanExercise.fromJson(Map<String, dynamic> json) => _$PlanExerciseFromJson(json);
 
 @override final  String id;
@@ -255,6 +256,7 @@ class _PlanExercise implements PlanExercise {
 }
 
 @override@JsonKey(name: 'superset_group_id') final  String? supersetGroupId;
+@override final  String? note;
 
 /// Create a copy of PlanExercise
 /// with the given fields replaced by the non-null parameter values.
@@ -269,16 +271,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.planId, planId) || other.planId == planId)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.position, position) || other.position == position)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.sessionNumber, sessionNumber) || other.sessionNumber == sessionNumber)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&const DeepCollectionEquality().equals(other._sets, _sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.planId, planId) || other.planId == planId)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.position, position) || other.position == position)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.sessionNumber, sessionNumber) || other.sessionNumber == sessionNumber)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&const DeepCollectionEquality().equals(other._sets, _sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,planId,exerciseId,position,goalType,weightType,weekNumber,sessionNumber,exercise,const DeepCollectionEquality().hash(_sets),supersetGroupId);
+int get hashCode => Object.hash(runtimeType,id,planId,exerciseId,position,goalType,weightType,weekNumber,sessionNumber,exercise,const DeepCollectionEquality().hash(_sets),supersetGroupId,note);
 
 @override
 String toString() {
-  return 'PlanExercise(id: $id, planId: $planId, exerciseId: $exerciseId, position: $position, goalType: $goalType, weightType: $weightType, weekNumber: $weekNumber, sessionNumber: $sessionNumber, exercise: $exercise, sets: $sets, supersetGroupId: $supersetGroupId)';
+  return 'PlanExercise(id: $id, planId: $planId, exerciseId: $exerciseId, position: $position, goalType: $goalType, weightType: $weightType, weekNumber: $weekNumber, sessionNumber: $sessionNumber, exercise: $exercise, sets: $sets, supersetGroupId: $supersetGroupId, note: $note)';
 }
 
 
@@ -289,7 +291,7 @@ abstract mixin class _$PlanExerciseCopyWith<$Res> implements $PlanExerciseCopyWi
   factory _$PlanExerciseCopyWith(_PlanExercise value, $Res Function(_PlanExercise) _then) = __$PlanExerciseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'plan_id') String planId,@JsonKey(name: 'exercise_id') String exerciseId, int position,@JsonKey(name: 'goal_type') String goalType,@JsonKey(name: 'weight_type') String weightType,@JsonKey(name: 'week_number') int weekNumber,@JsonKey(name: 'session_number') int sessionNumber,@JsonKey(name: 'exercises') Exercise? exercise,@JsonKey(name: 'plan_exercise_sets') List<PlanExerciseSet> sets,@JsonKey(name: 'superset_group_id') String? supersetGroupId
+ String id,@JsonKey(name: 'plan_id') String planId,@JsonKey(name: 'exercise_id') String exerciseId, int position,@JsonKey(name: 'goal_type') String goalType,@JsonKey(name: 'weight_type') String weightType,@JsonKey(name: 'week_number') int weekNumber,@JsonKey(name: 'session_number') int sessionNumber,@JsonKey(name: 'exercises') Exercise? exercise,@JsonKey(name: 'plan_exercise_sets') List<PlanExerciseSet> sets,@JsonKey(name: 'superset_group_id') String? supersetGroupId, String? note
 });
 
 
@@ -306,7 +308,7 @@ class __$PlanExerciseCopyWithImpl<$Res>
 
 /// Create a copy of PlanExercise
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? planId = null,Object? exerciseId = null,Object? position = null,Object? goalType = null,Object? weightType = null,Object? weekNumber = null,Object? sessionNumber = null,Object? exercise = freezed,Object? sets = null,Object? supersetGroupId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? planId = null,Object? exerciseId = null,Object? position = null,Object? goalType = null,Object? weightType = null,Object? weekNumber = null,Object? sessionNumber = null,Object? exercise = freezed,Object? sets = null,Object? supersetGroupId = freezed,Object? note = freezed,}) {
   return _then(_PlanExercise(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,planId: null == planId ? _self.planId : planId // ignore: cast_nullable_to_non_nullable
@@ -319,6 +321,7 @@ as int,sessionNumber: null == sessionNumber ? _self.sessionNumber : sessionNumbe
 as int,exercise: freezed == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
 as Exercise?,sets: null == sets ? _self._sets : sets // ignore: cast_nullable_to_non_nullable
 as List<PlanExerciseSet>,supersetGroupId: freezed == supersetGroupId ? _self.supersetGroupId : supersetGroupId // ignore: cast_nullable_to_non_nullable
+as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

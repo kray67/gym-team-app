@@ -55,6 +55,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
                         targetDurationSecs: s.targetDurationSecs,
                       ))
                   .toList(),
+              note: pe.note,
             );
           })
           .toList(),
@@ -506,6 +507,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
               'session_number': pe.sessionNumber,
               if (pe.supersetGroupId != null)
                 'superset_group_id': pe.supersetGroupId,
+              if (pe.note != null && pe.note!.isNotEmpty) 'note': pe.note,
             })
             .select('id')
             .single();
@@ -544,6 +546,45 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
 
     state = null;
     return planId;
+  }
+
+  void swapExerciseInSession(String exerciseId, Exercise newExercise) {
+    final s = state;
+    if (s == null) return;
+    final isTimeBased = const ['time', 'weight_time', 'distance_time']
+        .contains(newExercise.trackingType);
+    state = s.copyWith(
+      exercises: s.exercises.map((e) {
+        if (e.id != exerciseId) return e;
+        return e.copyWith(
+          exercise: newExercise,
+          goalType: isTimeBased ? 'time' : e.goalType,
+        );
+      }).toList(),
+    );
+  }
+
+  void setNoteOnExercise(String exerciseId, String? note) {
+    final s = state;
+    if (s == null) return;
+    state = s.copyWith(
+      exercises: s.exercises.map((e) {
+        if (e.id != exerciseId) return e;
+        return e.copyWith(note: note);
+      }).toList(),
+    );
+  }
+
+  void formSupersetInSession(List<String> exerciseIds) {
+    final s = state;
+    if (s == null) return;
+    final groupId = _uuid.v4();
+    state = s.copyWith(
+      exercises: s.exercises.map((e) {
+        if (exerciseIds.contains(e.id)) return e.copyWith(supersetGroupId: groupId);
+        return e;
+      }).toList(),
+    );
   }
 
   void discard() => state = null;

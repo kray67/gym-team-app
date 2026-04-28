@@ -19,6 +19,7 @@ abstract class PlanExercise with _$PlanExercise {
     @JsonKey(name: 'exercises') Exercise? exercise,
     @JsonKey(name: 'plan_exercise_sets') @Default([]) List<PlanExerciseSet> sets,
     @JsonKey(name: 'superset_group_id') String? supersetGroupId,
+    String? note,
   }) = _PlanExercise;
 
   factory PlanExercise.fromJson(Map<String, dynamic> json) =>

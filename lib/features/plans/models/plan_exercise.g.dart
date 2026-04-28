@@ -25,6 +25,7 @@ _PlanExercise _$PlanExerciseFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       supersetGroupId: json['superset_group_id'] as String?,
+      note: json['note'] as String?,
     );
 
 Map<String, dynamic> _$PlanExerciseToJson(_PlanExercise instance) =>
@@ -40,4 +41,5 @@ Map<String, dynamic> _$PlanExerciseToJson(_PlanExercise instance) =>
       'exercises': instance.exercise,
       'plan_exercise_sets': instance.sets,
       'superset_group_id': instance.supersetGroupId,
+      'note': instance.note,
     };

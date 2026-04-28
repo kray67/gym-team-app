@@ -30,6 +30,7 @@ abstract class PlanEditorExercise with _$PlanEditorExercise {
     @Default(1) int weekNumber,
     @Default(1) int sessionNumber,
     String? supersetGroupId,
+    String? note,
   }) = _PlanEditorExercise;
 }
 

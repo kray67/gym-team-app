@@ -7,7 +7,7 @@ part of 'plan_editor_provider.dart';
 // **************************************************************************
 
 String _$planEditorNotifierHash() =>
-    r'53b4eddcbd4e5493672265bf8d03b51c2b37debe';
+    r'c6601acdaee9cfb4e36a54deece97f69d3409e3a';
 
 /// See also [PlanEditorNotifier].
 @ProviderFor(PlanEditorNotifier)

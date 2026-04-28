@@ -302,7 +302,7 @@ mixin _$PlanEditorExercise {
 
  String get id; Exercise get exercise; String get goalType;// 'reps' | 'reps_range' | 'amrap' | 'time'
  String get weightType;// 'percent_1rm' | 'rpe' | 'rpe_range'
- List<PlanEditorSet> get sets; int get weekNumber; int get sessionNumber; String? get supersetGroupId;
+ List<PlanEditorSet> get sets; int get weekNumber; int get sessionNumber; String? get supersetGroupId; String? get note;
 /// Create a copy of PlanEditorExercise
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -313,16 +313,16 @@ $PlanEditorExerciseCopyWith<PlanEditorExercise> get copyWith => _$PlanEditorExer
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanEditorExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&const DeepCollectionEquality().equals(other.sets, sets)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.sessionNumber, sessionNumber) || other.sessionNumber == sessionNumber)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanEditorExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&const DeepCollectionEquality().equals(other.sets, sets)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.sessionNumber, sessionNumber) || other.sessionNumber == sessionNumber)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId)&&(identical(other.note, note) || other.note == note));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,exercise,goalType,weightType,const DeepCollectionEquality().hash(sets),weekNumber,sessionNumber,supersetGroupId);
+int get hashCode => Object.hash(runtimeType,id,exercise,goalType,weightType,const DeepCollectionEquality().hash(sets),weekNumber,sessionNumber,supersetGroupId,note);
 
 @override
 String toString() {
-  return 'PlanEditorExercise(id: $id, exercise: $exercise, goalType: $goalType, weightType: $weightType, sets: $sets, weekNumber: $weekNumber, sessionNumber: $sessionNumber, supersetGroupId: $supersetGroupId)';
+  return 'PlanEditorExercise(id: $id, exercise: $exercise, goalType: $goalType, weightType: $weightType, sets: $sets, weekNumber: $weekNumber, sessionNumber: $sessionNumber, supersetGroupId: $supersetGroupId, note: $note)';
 }
 
 
@@ -333,7 +333,7 @@ abstract mixin class $PlanEditorExerciseCopyWith<$Res>  {
   factory $PlanEditorExerciseCopyWith(PlanEditorExercise value, $Res Function(PlanEditorExercise) _then) = _$PlanEditorExerciseCopyWithImpl;
 @useResult
 $Res call({
- String id, Exercise exercise, String goalType, String weightType, List<PlanEditorSet> sets, int weekNumber, int sessionNumber, String? supersetGroupId
+ String id, Exercise exercise, String goalType, String weightType, List<PlanEditorSet> sets, int weekNumber, int sessionNumber, String? supersetGroupId, String? note
 });
 
 
@@ -350,7 +350,7 @@ class _$PlanEditorExerciseCopyWithImpl<$Res>
 
 /// Create a copy of PlanEditorExercise
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exercise = null,Object? goalType = null,Object? weightType = null,Object? sets = null,Object? weekNumber = null,Object? sessionNumber = null,Object? supersetGroupId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exercise = null,Object? goalType = null,Object? weightType = null,Object? sets = null,Object? weekNumber = null,Object? sessionNumber = null,Object? supersetGroupId = freezed,Object? note = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exercise: null == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
@@ -360,6 +360,7 @@ as String,sets: null == sets ? _self.sets : sets // ignore: cast_nullable_to_non
 as List<PlanEditorSet>,weekNumber: null == weekNumber ? _self.weekNumber : weekNumber // ignore: cast_nullable_to_non_nullable
 as int,sessionNumber: null == sessionNumber ? _self.sessionNumber : sessionNumber // ignore: cast_nullable_to_non_nullable
 as int,supersetGroupId: freezed == supersetGroupId ? _self.supersetGroupId : supersetGroupId // ignore: cast_nullable_to_non_nullable
+as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -454,10 +455,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  Exercise exercise,  String goalType,  String weightType,  List<PlanEditorSet> sets,  int weekNumber,  int sessionNumber,  String? supersetGroupId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  Exercise exercise,  String goalType,  String weightType,  List<PlanEditorSet> sets,  int weekNumber,  int sessionNumber,  String? supersetGroupId,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlanEditorExercise() when $default != null:
-return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.sets,_that.weekNumber,_that.sessionNumber,_that.supersetGroupId);case _:
+return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.sets,_that.weekNumber,_that.sessionNumber,_that.supersetGroupId,_that.note);case _:
   return orElse();
 
 }
@@ -475,10 +476,10 @@ return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.se
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  Exercise exercise,  String goalType,  String weightType,  List<PlanEditorSet> sets,  int weekNumber,  int sessionNumber,  String? supersetGroupId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  Exercise exercise,  String goalType,  String weightType,  List<PlanEditorSet> sets,  int weekNumber,  int sessionNumber,  String? supersetGroupId,  String? note)  $default,) {final _that = this;
 switch (_that) {
 case _PlanEditorExercise():
-return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.sets,_that.weekNumber,_that.sessionNumber,_that.supersetGroupId);case _:
+return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.sets,_that.weekNumber,_that.sessionNumber,_that.supersetGroupId,_that.note);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -495,10 +496,10 @@ return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.se
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  Exercise exercise,  String goalType,  String weightType,  List<PlanEditorSet> sets,  int weekNumber,  int sessionNumber,  String? supersetGroupId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  Exercise exercise,  String goalType,  String weightType,  List<PlanEditorSet> sets,  int weekNumber,  int sessionNumber,  String? supersetGroupId,  String? note)?  $default,) {final _that = this;
 switch (_that) {
 case _PlanEditorExercise() when $default != null:
-return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.sets,_that.weekNumber,_that.sessionNumber,_that.supersetGroupId);case _:
+return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.sets,_that.weekNumber,_that.sessionNumber,_that.supersetGroupId,_that.note);case _:
   return null;
 
 }
@@ -510,7 +511,7 @@ return $default(_that.id,_that.exercise,_that.goalType,_that.weightType,_that.se
 
 
 class _PlanEditorExercise implements PlanEditorExercise {
-  const _PlanEditorExercise({required this.id, required this.exercise, this.goalType = 'reps', this.weightType = 'percent_1rm', final  List<PlanEditorSet> sets = const [], this.weekNumber = 1, this.sessionNumber = 1, this.supersetGroupId}): _sets = sets;
+  const _PlanEditorExercise({required this.id, required this.exercise, this.goalType = 'reps', this.weightType = 'percent_1rm', final  List<PlanEditorSet> sets = const [], this.weekNumber = 1, this.sessionNumber = 1, this.supersetGroupId, this.note}): _sets = sets;
   
 
 @override final  String id;
@@ -530,6 +531,7 @@ class _PlanEditorExercise implements PlanEditorExercise {
 @override@JsonKey() final  int weekNumber;
 @override@JsonKey() final  int sessionNumber;
 @override final  String? supersetGroupId;
+@override final  String? note;
 
 /// Create a copy of PlanEditorExercise
 /// with the given fields replaced by the non-null parameter values.
@@ -541,16 +543,16 @@ _$PlanEditorExerciseCopyWith<_PlanEditorExercise> get copyWith => __$PlanEditorE
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanEditorExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&const DeepCollectionEquality().equals(other._sets, _sets)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.sessionNumber, sessionNumber) || other.sessionNumber == sessionNumber)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanEditorExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exercise, exercise) || other.exercise == exercise)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.weightType, weightType) || other.weightType == weightType)&&const DeepCollectionEquality().equals(other._sets, _sets)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.sessionNumber, sessionNumber) || other.sessionNumber == sessionNumber)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId)&&(identical(other.note, note) || other.note == note));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,exercise,goalType,weightType,const DeepCollectionEquality().hash(_sets),weekNumber,sessionNumber,supersetGroupId);
+int get hashCode => Object.hash(runtimeType,id,exercise,goalType,weightType,const DeepCollectionEquality().hash(_sets),weekNumber,sessionNumber,supersetGroupId,note);
 
 @override
 String toString() {
-  return 'PlanEditorExercise(id: $id, exercise: $exercise, goalType: $goalType, weightType: $weightType, sets: $sets, weekNumber: $weekNumber, sessionNumber: $sessionNumber, supersetGroupId: $supersetGroupId)';
+  return 'PlanEditorExercise(id: $id, exercise: $exercise, goalType: $goalType, weightType: $weightType, sets: $sets, weekNumber: $weekNumber, sessionNumber: $sessionNumber, supersetGroupId: $supersetGroupId, note: $note)';
 }
 
 
@@ -561,7 +563,7 @@ abstract mixin class _$PlanEditorExerciseCopyWith<$Res> implements $PlanEditorEx
   factory _$PlanEditorExerciseCopyWith(_PlanEditorExercise value, $Res Function(_PlanEditorExercise) _then) = __$PlanEditorExerciseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, Exercise exercise, String goalType, String weightType, List<PlanEditorSet> sets, int weekNumber, int sessionNumber, String? supersetGroupId
+ String id, Exercise exercise, String goalType, String weightType, List<PlanEditorSet> sets, int weekNumber, int sessionNumber, String? supersetGroupId, String? note
 });
 
 
@@ -578,7 +580,7 @@ class __$PlanEditorExerciseCopyWithImpl<$Res>
 
 /// Create a copy of PlanEditorExercise
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exercise = null,Object? goalType = null,Object? weightType = null,Object? sets = null,Object? weekNumber = null,Object? sessionNumber = null,Object? supersetGroupId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exercise = null,Object? goalType = null,Object? weightType = null,Object? sets = null,Object? weekNumber = null,Object? sessionNumber = null,Object? supersetGroupId = freezed,Object? note = freezed,}) {
   return _then(_PlanEditorExercise(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exercise: null == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
@@ -588,6 +590,7 @@ as String,sets: null == sets ? _self._sets : sets // ignore: cast_nullable_to_no
 as List<PlanEditorSet>,weekNumber: null == weekNumber ? _self.weekNumber : weekNumber // ignore: cast_nullable_to_non_nullable
 as int,sessionNumber: null == sessionNumber ? _self.sessionNumber : sessionNumber // ignore: cast_nullable_to_non_nullable
 as int,supersetGroupId: freezed == supersetGroupId ? _self.supersetGroupId : supersetGroupId // ignore: cast_nullable_to_non_nullable
+as String?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

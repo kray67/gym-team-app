@@ -789,6 +789,110 @@ class _PlanSupersetWrapper extends ConsumerWidget {
   }
 }
 
+// ── Plan superset picker ──────────────────────────────────────────────────────
+
+Future<void> _showCreatePlanSupersetSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  required int weekNumber,
+  required int dayNumber,
+  required String initiatingId,
+}) async {
+  final state = ref.read(planEditorNotifierProvider);
+  if (state == null) return;
+  final isolated = state.exercises
+      .where((e) =>
+          e.weekNumber == weekNumber &&
+          e.sessionNumber == dayNumber &&
+          e.supersetGroupId == null)
+      .toList();
+  if (isolated.length < 2) return;
+
+  final confirmed = await showModalBottomSheet<Set<String>>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => _PlanSupersetPickerSheet(
+      exercises: isolated,
+      initialSelected: {initiatingId},
+    ),
+  );
+  if (confirmed != null && confirmed.length >= 2) {
+    ref
+        .read(planEditorNotifierProvider.notifier)
+        .formSupersetInSession(confirmed.toList());
+  }
+}
+
+class _PlanSupersetPickerSheet extends StatefulWidget {
+  final List<PlanEditorExercise> exercises;
+  final Set<String> initialSelected;
+
+  const _PlanSupersetPickerSheet({
+    required this.exercises,
+    required this.initialSelected,
+  });
+
+  @override
+  State<_PlanSupersetPickerSheet> createState() =>
+      _PlanSupersetPickerSheetState();
+}
+
+class _PlanSupersetPickerSheetState extends State<_PlanSupersetPickerSheet> {
+  late final Set<String> _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = Set.from(widget.initialSelected);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canConfirm = _selected.length >= 2;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Create Superset',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            const Text('Select ≥ 2 exercises',
+                style: TextStyle(color: Colors.white54, fontSize: 13)),
+            const SizedBox(height: 12),
+            ...widget.exercises.map((ex) => CheckboxListTile(
+                  title: Text(ex.exercise.name),
+                  subtitle: Text(ex.exercise.muscleGroup,
+                      style: const TextStyle(fontSize: 12)),
+                  value: _selected.contains(ex.id),
+                  onChanged: (v) => setState(() {
+                    if (v == true) {
+                      _selected.add(ex.id);
+                    } else {
+                      _selected.remove(ex.id);
+                    }
+                  }),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                )),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed:
+                    canConfirm ? () => Navigator.pop(context, _selected) : null,
+                child: const Text('Create'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ── Exercise plan card (card + table layout) ──────────────────────────────────
 
 class _ExercisePlanCard extends ConsumerWidget {
@@ -843,14 +947,76 @@ class _ExercisePlanCard extends ConsumerWidget {
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_horiz,
                         color: Colors.white38, size: 20),
-                    onSelected: (v) {
-                      if (v == 'remove_from_ss') {
+                    onSelected: (v) async {
+                      if (v == 'swap') {
+                        final result = await context.push<ExercisePickerResult>(
+                            '/workout/pick-exercise?mode=swap');
+                        if (result != null) {
+                          notifier.swapExerciseInSession(
+                              entry.id, result.exercises.first);
+                        }
+                      } else if (v == 'note') {
+                        if (!context.mounted) return;
+                        final ctrl =
+                            TextEditingController(text: entry.note);
+                        final saved = await showDialog<String>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Exercise note'),
+                            content: TextField(
+                              controller: ctrl,
+                              autofocus: true,
+                              maxLines: 3,
+                              decoration: const InputDecoration(
+                                hintText: 'Add a note…',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancel'),
+                              ),
+                              FilledButton(
+                                onPressed: () =>
+                                    Navigator.pop(ctx, ctrl.text),
+                                child: const Text('Save'),
+                              ),
+                            ],
+                          ),
+                        );
+                        ctrl.dispose();
+                        if (saved != null) {
+                          notifier.setNoteOnExercise(entry.id,
+                              saved.trim().isEmpty ? null : saved.trim());
+                        }
+                      } else if (v == 'superset') {
+                        if (!context.mounted) return;
+                        await _showCreatePlanSupersetSheet(
+                          context,
+                          ref,
+                          weekNumber: entry.weekNumber,
+                          dayNumber: entry.sessionNumber,
+                          initiatingId: entry.id,
+                        );
+                      } else if (v == 'remove_from_ss') {
                         notifier.removeFromSuperset(entry.id);
                       } else if (v == 'remove') {
                         notifier.removeExerciseFromSession(entry.id);
                       }
                     },
                     itemBuilder: (_) => [
+                      const PopupMenuItem(
+                          value: 'swap', child: Text('Swap exercise')),
+                      PopupMenuItem(
+                        value: 'note',
+                        child: Text(
+                            entry.note != null ? 'Edit note' : 'Add note'),
+                      ),
+                      if (!isInSuperset)
+                        const PopupMenuItem(
+                            value: 'superset',
+                            child: Text('Add to superset…')),
                       if (isInSuperset)
                         const PopupMenuItem(
                             value: 'remove_from_ss',
@@ -877,6 +1043,16 @@ class _ExercisePlanCard extends ConsumerWidget {
                 style:
                     const TextStyle(color: Colors.white38, fontSize: 12),
               ),
+              if (entry.note != null && entry.note!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  entry.note!,
+                  style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic),
+                ),
+              ],
               const SizedBox(height: 10),
 
               // ── Goal + Intensity selectors ──────────────────────────────
