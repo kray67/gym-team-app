@@ -899,7 +899,8 @@ class _SessionCard extends ConsumerWidget {
     final exercises = plan.exercises
         .where((e) =>
             e.weekNumber == weekNumber && e.sessionNumber == dayNumber)
-        .toList();
+        .toList()
+      ..sort((a, b) => a.position.compareTo(b.position));
 
     final totalWorkSets = exercises.fold<int>(
         0, (sum, e) => sum + e.sets.where((s) => !s.isWarmup).length);
@@ -1068,7 +1069,8 @@ class _SessionCard extends ConsumerWidget {
 
 String _setTargetDescription(PlanExercise e,
     {Map<String, double> oneRMs = const {}}) {
-  final workSets = e.sets.where((s) => !s.isWarmup).toList();
+  final workSets = e.sets.where((s) => !s.isWarmup).toList()
+    ..sort((a, b) => a.setNumber.compareTo(b.setNumber));
   final first = workSets.isNotEmpty ? workSets.first : null;
   if (first == null) return '';
 

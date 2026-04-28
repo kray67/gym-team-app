@@ -429,11 +429,33 @@ UPDATE exercises SET tracking_type = 'reps_only' WHERE name IN ('Push Up', 'Burp
 ### Post-Phase 10 UX Fixes ✅
 - [x] **Plan editor Difficulty/Equipment**: replaced `SegmentedButton`/`ChoiceChip` with `InputDecorator` + `DropdownButton` (reactive, no `value:` deprecation)
 - [x] **Plan session builder Goal/Intensity**: replaced `SegmentedButton`/`ChoiceChip` with `InputDecorator` + `DropdownButton` (reactive); Intensity hidden when Goal = Time
+- [x] **Plan editor Avg Duration**: replaced `ChoiceChip` row with `TextField` accepting a number (minutes); labeled "Avg Duration (minutes)"
 - [x] **Duplicate drag handle on web**: `buildDefaultDragHandles: false` added to all 4 `ReorderableListView`s (active workout + plan session builder, both outer and inner/superset lists)
 - [x] **Workout summary AMRAP/time bug**: `_bestSet()` picks by correct field per tracking type; `_bestSetStr()` renders per-type string
 - [x] **Workout detail wrong columns**: `_ExerciseDetail` reads `trackingType`; headers + `_SetRow._valueCols()` render correct columns per type
 - [x] **Time input improvements**: HH:MM:SS support; auto-reformat on blur; tappable ℹ icon tooltip on TIME label explaining accepted formats
 - [x] **Plan session builder Confirm button**: fixed for time-based exercises (`hasConfiguredSet` now checks `targetDurationSecs != null`)
+- [x] **Time-based exercise duration inputs empty on edit**: `startEdit()` in `PlanEditorNotifier` now maps `targetDurationSecs` from DB sets; root cause was missing field mapping
+- [x] **Exercise order scrambling (all screens)**: Supabase embedded relations return rows in arbitrary DB order; fixed by sorting after fetch — `startEdit()` sorts exercises by `position` + sets by `setNumber`; `startWorkoutFromPlan()` sorts exercises by `position` + sets by `setNumber`; `plan_detail_screen.dart` session exercise list sorted by `position` + `_setTargetDescription` sets sorted by `setNumber`
+- [x] **Set number scrambling in active workout**: `startWorkoutFromPlan()` was iterating over unsorted `pe.sets` — fixed by sorting before `asMap().entries.map()`
+- [x] **Superset header number**: decoupled from slot position index; pre-computed `ssNumbers` map counts only superset slots; applied to both `ActiveWorkoutScreen` and `PlanSessionBuilderScreen`
+- [x] **Default intensity changed to RPE**: `addExerciseToSession()` + `addSupersetToSession()` in `PlanEditorNotifier` now default `weightType: 'rpe'` instead of `percent_1rm`
+- [x] **Plan session builder exercise ⋯ menu**: added Swap Exercise, Add Note, Add to Superset, Remove from Superset options — matches active workout parity; `swapExerciseInSession`, `setNoteOnExercise`, `formSupersetInSession` added to `PlanEditorNotifier`
+- [x] **Exercise note in plan session builder**: `note` field added to `PlanEditorExercise` model + `PlanExercise` DB model; persisted in `savePlan()`; loaded in `startEdit()`; displayed as italic text below muscle group label in session builder
+
+### SQL pending (apply in Supabase dashboard)
+```sql
+-- Exercise note on plan exercises
+ALTER TABLE plan_exercises ADD COLUMN IF NOT EXISTS note text;
+
+-- Drop vestigial columns (never used, always NULL)
+ALTER TABLE plan_exercises
+  DROP COLUMN IF EXISTS target_sets,
+  DROP COLUMN IF EXISTS target_reps,
+  DROP COLUMN IF EXISTS target_weight,
+  DROP COLUMN IF EXISTS target_duration;
+```
+
 - [x] Web build rebuilt + pushed to Vercel
 
 ---
