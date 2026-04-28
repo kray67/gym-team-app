@@ -443,7 +443,7 @@ UPDATE exercises SET tracking_type = 'reps_only' WHERE name IN ('Push Up', 'Burp
 - [x] **Plan session builder exercise ⋯ menu**: added Swap Exercise, Add Note, Add to Superset, Remove from Superset options — matches active workout parity; `swapExerciseInSession`, `setNoteOnExercise`, `formSupersetInSession` added to `PlanEditorNotifier`
 - [x] **Exercise note in plan session builder**: `note` field added to `PlanEditorExercise` model + `PlanExercise` DB model; persisted in `savePlan()`; loaded in `startEdit()`; displayed as italic text below muscle group label in session builder
 
-### SQL pending (apply in Supabase dashboard)
+### SQL applied ✅
 ```sql
 -- Exercise note on plan exercises
 ALTER TABLE plan_exercises ADD COLUMN IF NOT EXISTS note text;

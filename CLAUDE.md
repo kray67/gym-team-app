@@ -54,8 +54,8 @@ profiles             -- extends auth.users: username, display_name, bio, avatar_
 follows              -- (follower_id, following_id) composite PK
 exercises            -- catalog: name, category, muscle_group, is_custom, created_by, tracking_type (text, default 'weight_reps')
 workout_plans        -- title, description, is_public, owner_id
-plan_exercises       -- plan_id, exercise_id, position, goal_type, weight_type, week_number, session_number, superset_group_id
-plan_exercise_sets   -- plan_exercise_id, set_number, target_reps, target_reps_max, target_weight (% 1RM), target_rpe, target_rpe_max, is_warmup, weight_increment
+plan_exercises       -- plan_id, exercise_id, position, goal_type, weight_type, week_number, session_number, superset_group_id, note
+plan_exercise_sets   -- plan_exercise_id, set_number, target_reps, target_reps_max, target_weight (% 1RM), target_rpe, target_rpe_max, is_warmup, weight_increment, target_duration_secs
 saved_plans          -- (user_id, plan_id) — users saving others' plans
 user_plan_1rm        -- user_id, plan_id, exercise_id, one_rm_kg, updated_at; UNIQUE(user_id, plan_id, exercise_id)
 user_plan_progress   -- user_id, plan_id, restarted_at; PK(user_id, plan_id); tracks when a plan was last reset
