@@ -231,7 +231,17 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 final labels = _computeLabels(workout.exercises);
                 final colors = _computeSupersetColors(workout.exercises);
                 final slots = _buildActiveSlots(workout.exercises);
+                // Assign sequential numbers to superset groups in slot order.
+                final ssNumbers = <String, int>{};
+                var ssCount = 0;
+                for (final slot in slots) {
+                  if (slot is List<ActiveExerciseEntry>) {
+                    final gid = slot.first.supersetGroupId!;
+                    ssNumbers[gid] = ++ssCount;
+                  }
+                }
                 return ReorderableListView.builder(
+                  buildDefaultDragHandles: false,
                   padding: const EdgeInsets.only(bottom: 120),
                   itemCount: slots.length,
                   onReorder: (oi, ni) => ref
@@ -258,6 +268,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       exercises: group,
                       labels: labels,
                       color: color,
+                      supersetNumber: ssNumbers[groupId] ?? 1,
                     );
                   },
                 );
@@ -562,6 +573,7 @@ class _SupersetWrapper extends ConsumerWidget {
   final List<ActiveExerciseEntry> exercises;
   final Map<String, String> labels;
   final Color color;
+  final int supersetNumber;
 
   const _SupersetWrapper({
     super.key,
@@ -570,14 +582,12 @@ class _SupersetWrapper extends ConsumerWidget {
     required this.exercises,
     required this.labels,
     required this.color,
+    required this.supersetNumber,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(activeWorkoutNotifierProvider.notifier);
-    final firstLabel = labels[exercises.first.id] ?? '';
-    final slotNum = firstLabel.replaceAll(RegExp(r'[A-Za-z]+$'), '');
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Container(
@@ -594,7 +604,7 @@ class _SupersetWrapper extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    'Superset $slotNum',
+                    'Superset $supersetNumber',
                     style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.bold,
@@ -637,6 +647,7 @@ class _SupersetWrapper extends ConsumerWidget {
             const Divider(height: 1, indent: 12, endIndent: 12),
             // ── Inner reorderable list ───────────────────────────────────
             ReorderableListView(
+              buildDefaultDragHandles: false,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               onReorder: (oi, ni) =>

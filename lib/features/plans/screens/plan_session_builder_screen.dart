@@ -639,6 +639,14 @@ class SessionEditorScreen extends ConsumerWidget {
               final labels = _computePlanLabels(exercises);
               final colors = _computePlanSupersetColors(exercises);
               final slots = _buildPlanSlots(exercises);
+              final ssNumbers = <String, int>{};
+              var ssCount = 0;
+              for (final slot in slots) {
+                if (slot is List<PlanEditorExercise>) {
+                  final gid = slot.first.supersetGroupId!;
+                  ssNumbers[gid] = ++ssCount;
+                }
+              }
               return ReorderableListView.builder(
                 buildDefaultDragHandles: false,
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 100),
@@ -669,6 +677,7 @@ class SessionEditorScreen extends ConsumerWidget {
                     color: color,
                     weekNumber: weekNumber,
                     dayNumber: dayNumber,
+                    supersetNumber: ssNumbers[groupId] ?? 1,
                   );
                 },
               );
@@ -687,6 +696,7 @@ class _PlanSupersetWrapper extends ConsumerWidget {
   final Color color;
   final int weekNumber;
   final int dayNumber;
+  final int supersetNumber;
 
   const _PlanSupersetWrapper({
     super.key,
@@ -697,13 +707,12 @@ class _PlanSupersetWrapper extends ConsumerWidget {
     required this.color,
     required this.weekNumber,
     required this.dayNumber,
+    required this.supersetNumber,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(planEditorNotifierProvider.notifier);
-    final firstLabel = labels[exercises.first.id] ?? '';
-    final slotNum = firstLabel.replaceAll(RegExp(r'[A-Za-z]+$'), '');
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -721,7 +730,7 @@ class _PlanSupersetWrapper extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    'Superset $slotNum',
+                    'Superset $supersetNumber',
                     style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.bold,
