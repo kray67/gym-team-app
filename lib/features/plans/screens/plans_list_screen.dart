@@ -7,6 +7,19 @@ import 'package:gym_team/features/plans/providers/plan_active_notifier.dart';
 import 'package:gym_team/features/plans/providers/plan_editor_provider.dart';
 import 'package:gym_team/features/plans/providers/plans_provider.dart';
 
+const _difficultyLabels = {
+  'novice': 'Novice',
+  'intermediate': 'Intermediate',
+  'advanced': 'Advanced',
+};
+
+const _equipmentLabels = {
+  'bodyweight': 'Bodyweight',
+  'dumbbells': 'Dumbbells',
+  'garage_gym': 'Garage Gym',
+  'commercial_gym': 'Commercial Gym',
+};
+
 class PlansListScreen extends ConsumerStatefulWidget {
   const PlansListScreen({super.key});
 
@@ -14,160 +27,375 @@ class PlansListScreen extends ConsumerStatefulWidget {
   ConsumerState<PlansListScreen> createState() => _PlansListScreenState();
 }
 
-class _PlansListScreenState extends ConsumerState<PlansListScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabs;
-
-  @override
-  void initState() {
-    super.initState();
-    // Tabs: Discover (0), Saved (1), My Plans (2)
-    _tabs = TabController(length: 3, vsync: this);
-    _tabs.addListener(() => setState(() {}));
-  }
+class _PlansListScreenState extends ConsumerState<PlansListScreen> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  int? _sessionsPerWeek;
+  String? _difficulty;
+  String? _equipment;
+  bool _favoritesOnly = false;
+  bool _gymTeamOnly = false;
+  bool _myPlansOnly = false;
 
   @override
   void dispose() {
-    _tabs.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  void _setFavoritesOnly(bool v) => setState(() {
+        _favoritesOnly = v;
+        if (v) _myPlansOnly = false;
+      });
+
+  void _setGymTeamOnly(bool v) => setState(() {
+        _gymTeamOnly = v;
+        if (v) _myPlansOnly = false;
+      });
+
+  void _setMyPlansOnly(bool v) => setState(() {
+        _myPlansOnly = v;
+        if (v) {
+          _favoritesOnly = false;
+          _gymTeamOnly = false;
+        }
+      });
+
+  List<WorkoutPlan> _applyFilters(
+    List<WorkoutPlan> all,
+    Set<String> favoriteIds,
+    String currentUserId,
+    String? gymTeamUserId,
+  ) {
+    return all.where((p) {
+      if (_searchQuery.isNotEmpty &&
+          !p.title.toLowerCase().contains(_searchQuery.toLowerCase())) {
+        return false;
+      }
+      if (_sessionsPerWeek != null && p.sessionsPerWeek != _sessionsPerWeek) {
+        return false;
+      }
+      if (_difficulty != null && p.difficulty != _difficulty) return false;
+      if (_equipment != null && p.equipment != _equipment) return false;
+
+      if (_myPlansOnly) {
+        return p.ownerId == currentUserId;
+      }
+
+      if (_favoritesOnly && !favoriteIds.contains(p.id)) return false;
+      if (_gymTeamOnly && p.owner?.isOfficial != true) return false;
+
+      return true;
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    final allAsync = ref.watch(allPlansProvider);
+    final favoriteIdsAsync = ref.watch(userFavoritePlanIdsProvider);
+    final gymTeamIdAsync = ref.watch(gymTeamUserIdProvider);
+    final currentUserId = supabase.auth.currentUser!.id;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Plans'),
-        bottom: TabBar(
-          controller: _tabs,
-          tabs: const [
-            Tab(text: 'Discover'),
-            Tab(text: 'Saved'),
-            Tab(text: 'My Plans'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabs,
-        children: [
-          _DiscoverTab(),
-          _SavedTab(),
-          _MyPlansTab(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'New Plan',
+            onPressed: () {
+              ref.read(planEditorNotifierProvider.notifier).startNew();
+              context.push('/plans/new');
+            },
+          ),
         ],
       ),
-      floatingActionButton: _tabs.index == 2
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                ref.read(planEditorNotifierProvider.notifier).startNew();
-                context.push('/plans/new');
+      body: Column(
+        children: [
+          _FilterPanel(
+            searchController: _searchController,
+            sessionsPerWeek: _sessionsPerWeek,
+            difficulty: _difficulty,
+            equipment: _equipment,
+            favoritesOnly: _favoritesOnly,
+            gymTeamOnly: _gymTeamOnly,
+            myPlansOnly: _myPlansOnly,
+            onSearchChanged: (v) => setState(() => _searchQuery = v),
+            onSessionsPerWeekChanged: (v) =>
+                setState(() => _sessionsPerWeek = v),
+            onDifficultyChanged: (v) => setState(() => _difficulty = v),
+            onEquipmentChanged: (v) => setState(() => _equipment = v),
+            onFavoritesOnlyChanged: _setFavoritesOnly,
+            onGymTeamOnlyChanged: _setGymTeamOnly,
+            onMyPlansOnlyChanged: _setMyPlansOnly,
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: allAsync.when(
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+              data: (all) {
+                final favoriteIds =
+                    favoriteIdsAsync.valueOrNull ?? const <String>{};
+                final gymTeamUserId = gymTeamIdAsync.valueOrNull;
+                final plans = _applyFilters(
+                    all, favoriteIds, currentUserId, gymTeamUserId);
+
+                if (plans.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No plans found.',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.4)),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: plans.length,
+                  itemBuilder: (context, i) => _PlanCard(
+                    plan: plans[i],
+                    currentUserId: currentUserId,
+                    favoriteIds: favoriteIds,
+                  ),
+                );
               },
-              icon: const Icon(Icons.add),
-              label: const Text('New Plan'),
-            )
-          : null,
-    );
-  }
-}
-
-// ── Discover tab ─────────────────────────────────────────────────────────────
-
-class _DiscoverTab extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(publicPlansProvider);
-    return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
-      data: (plans) => plans.isEmpty
-          ? Center(
-              child: Text('There are no plans created by other users yet.',
-                  style:
-                      TextStyle(color: Colors.white.withValues(alpha: 0.4))),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: plans.length,
-              itemBuilder: (context, i) =>
-                  _PlanCard(plan: plans[i], mode: _CardMode.discover),
             ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-// ── Saved tab ─────────────────────────────────────────────────────────────────
+// ── Filter panel ──────────────────────────────────────────────────────────────
 
-class _SavedTab extends ConsumerWidget {
+class _FilterPanel extends StatelessWidget {
+  final TextEditingController searchController;
+  final int? sessionsPerWeek;
+  final String? difficulty;
+  final String? equipment;
+  final bool favoritesOnly;
+  final bool gymTeamOnly;
+  final bool myPlansOnly;
+  final ValueChanged<String> onSearchChanged;
+  final ValueChanged<int?> onSessionsPerWeekChanged;
+  final ValueChanged<String?> onDifficultyChanged;
+  final ValueChanged<String?> onEquipmentChanged;
+  final ValueChanged<bool> onFavoritesOnlyChanged;
+  final ValueChanged<bool> onGymTeamOnlyChanged;
+  final ValueChanged<bool> onMyPlansOnlyChanged;
+
+  const _FilterPanel({
+    required this.searchController,
+    required this.sessionsPerWeek,
+    required this.difficulty,
+    required this.equipment,
+    required this.favoritesOnly,
+    required this.gymTeamOnly,
+    required this.myPlansOnly,
+    required this.onSearchChanged,
+    required this.onSessionsPerWeekChanged,
+    required this.onDifficultyChanged,
+    required this.onEquipmentChanged,
+    required this.onFavoritesOnlyChanged,
+    required this.onGymTeamOnlyChanged,
+    required this.onMyPlansOnlyChanged,
+  });
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(savedPlansProvider);
-    return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
-      data: (plans) => plans.isEmpty
-          ? Center(
-              child: Text('No saved plans yet.',
-                  style:
-                      TextStyle(color: Colors.white.withValues(alpha: 0.4))),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: plans.length,
-              itemBuilder: (context, i) =>
-                  _PlanCard(plan: plans[i], mode: _CardMode.saved),
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Search
+          TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              hintText: 'Search plans…',
+              prefixIcon: const Icon(Icons.search, size: 20),
+              isDense: true,
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              suffixIcon: searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 18),
+                      onPressed: () {
+                        searchController.clear();
+                        onSearchChanged('');
+                      },
+                    )
+                  : null,
             ),
+            onChanged: onSearchChanged,
+          ),
+          const SizedBox(height: 8),
+
+          // Dropdowns row
+          Row(
+            children: [
+              Expanded(
+                child: _CompactDropdown<int>(
+                  hint: 'Sessions/wk',
+                  value: sessionsPerWeek,
+                  items: [
+                    for (var i = 1; i <= 7; i++)
+                      DropdownMenuItem(value: i, child: Text('$i/wk')),
+                  ],
+                  onChanged: onSessionsPerWeekChanged,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _CompactDropdown<String>(
+                  hint: 'Difficulty',
+                  value: difficulty,
+                  items: _difficultyLabels.entries
+                      .map((e) => DropdownMenuItem(
+                          value: e.key, child: Text(e.value)))
+                      .toList(),
+                  onChanged: onDifficultyChanged,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _CompactDropdown<String>(
+                  hint: 'Equipment',
+                  value: equipment,
+                  items: _equipmentLabels.entries
+                      .map((e) => DropdownMenuItem(
+                          value: e.key, child: Text(e.value)))
+                      .toList(),
+                  onChanged: onEquipmentChanged,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+
+          // Chip row: Favorites + GymTeam (independent) | My Plans (exclusive)
+          Wrap(
+            spacing: 6,
+            children: [
+              FilterChip(
+                label: const Text('Favorites'),
+                selected: favoritesOnly,
+                onSelected: onFavoritesOnlyChanged,
+              ),
+              FilterChip(
+                label: const Text('GymTeam App'),
+                selected: gymTeamOnly,
+                onSelected: onGymTeamOnlyChanged,
+              ),
+              FilterChip(
+                label: const Text('My Plans'),
+                selected: myPlansOnly,
+                onSelected: onMyPlansOnlyChanged,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-// ── My Plans tab ──────────────────────────────────────────────────────────────
+class _CompactDropdown<T> extends StatelessWidget {
+  final String hint;
+  final T? value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?> onChanged;
 
-class _MyPlansTab extends ConsumerWidget {
+  const _CompactDropdown({
+    required this.hint,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(myPlansProvider);
-    return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
-      data: (plans) => plans.isEmpty
-          ? Center(
-              child: Text('You haven\'t created any plans yet.',
-                  style:
-                      TextStyle(color: Colors.white.withValues(alpha: 0.4))),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: plans.length,
-              itemBuilder: (context, i) =>
-                  _PlanCard(plan: plans[i], mode: _CardMode.owned),
-            ),
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        isDense: true,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: DropdownButton<T>(
+        value: value,
+        hint: Text(hint,
+            style: const TextStyle(fontSize: 12, color: Colors.white54)),
+        isDense: true,
+        isExpanded: true,
+        underline: const SizedBox(),
+        items: [
+          DropdownMenuItem<T>(
+            value: null,
+            child: Text('Any',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.primary)),
+          ),
+          ...items,
+        ],
+        onChanged: onChanged,
+        style: const TextStyle(fontSize: 12, color: Colors.white),
+      ),
     );
   }
 }
 
-// ── Plan card (shared, mode-aware) ────────────────────────────────────────────
-
-enum _CardMode { discover, saved, owned }
+// ── Plan card ─────────────────────────────────────────────────────────────────
 
 class _PlanCard extends ConsumerWidget {
   final WorkoutPlan plan;
-  final _CardMode mode;
+  final String currentUserId;
+  final Set<String> favoriteIds;
 
-  const _PlanCard({required this.plan, required this.mode});
+  const _PlanCard({
+    required this.plan,
+    required this.currentUserId,
+    required this.favoriteIds,
+  });
+
+  bool get _isOwner => plan.ownerId == currentUserId;
+  bool get _isFavorited => favoriteIds.contains(plan.id);
+
+  Future<void> _toggleFavorite(WidgetRef ref) async {
+    if (_isFavorited) {
+      await supabase
+          .from('plan_favorites')
+          .delete()
+          .eq('user_id', currentUserId)
+          .eq('plan_id', plan.id);
+    } else {
+      await supabase.from('plan_favorites').insert({
+        'user_id': currentUserId,
+        'plan_id': plan.id,
+      });
+    }
+    ref.invalidate(userFavoritePlanIdsProvider);
+    ref.invalidate(isPlanFavoritedProvider(plan.id));
+  }
 
   Future<void> _deletePlan(BuildContext context, WidgetRef ref) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete plan?'),
-        content: Text(
-            '"${plan.title}" will be permanently deleted.'),
+        content: Text('"${plan.title}" will be permanently deleted.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style:
-                TextButton.styleFrom(foregroundColor: Colors.red.shade400),
+            style: TextButton.styleFrom(foregroundColor: Colors.red.shade400),
             child: const Text('Delete'),
           ),
         ],
@@ -175,44 +403,29 @@ class _PlanCard extends ConsumerWidget {
     );
     if (confirm != true) return;
     await supabase.from('workout_plans').delete().eq('id', plan.id);
-    ref.invalidate(myPlansProvider);
+    ref.invalidate(allPlansProvider);
   }
 
-  Future<void> _unsavePlan(BuildContext context, WidgetRef ref) async {
-    final userId = supabase.auth.currentUser!.id;
-    await supabase
-        .from('saved_plans')
-        .delete()
-        .eq('user_id', userId)
-        .eq('plan_id', plan.id);
-    ref.invalidate(savedPlansProvider);
-    ref.invalidate(isPlanSavedProvider(plan.id));
-  }
-
-  String _buildSubtitle(String currentUserId) {
+  String _subtitle() {
     final parts = <String>[];
-    if (plan.weeks != null) parts.add('${plan.weeks} ${plan.weeks == 1 ? 'week' : 'weeks'}');
-    if (plan.sessionsPerWeek != null) parts.add('${plan.sessionsPerWeek}x week');
+    if (plan.weeks != null) {
+      parts.add('${plan.weeks} ${plan.weeks == 1 ? 'week' : 'weeks'}');
+    }
+    if (plan.sessionsPerWeek != null) {
+      parts.add('${plan.sessionsPerWeek}×/wk');
+    }
+    if (plan.difficulty != null) {
+      parts.add(_difficultyLabels[plan.difficulty] ?? plan.difficulty!);
+    }
 
-    final isAppOwned = plan.ownerId == null;
-    final isOwner = !isAppOwned && plan.ownerId == currentUserId;
-    final ownerName = plan.owner?.displayName ?? plan.owner?.username;
-
-    switch (mode) {
-      case _CardMode.discover:
-        parts.add(isAppOwned ? 'by GymTeam App' : (ownerName != null ? 'by $ownerName' : ''));
-      case _CardMode.saved:
-        if (isAppOwned) {
-          parts.add('by GymTeam App');
-        } else if (isOwner) {
-          parts.add('by You');
-          parts.add(plan.isPublic ? 'Public' : 'Private');
-        } else if (ownerName != null) {
-          parts.add('by $ownerName');
-        }
-      case _CardMode.owned:
-        parts.add('by You');
-        parts.add(plan.isPublic ? 'Public' : 'Private');
+    final owner = plan.owner;
+    if (owner?.isOfficial == true) {
+      parts.add('by GymTeam App');
+    } else if (_isOwner) {
+      parts.add('by You · ${plan.isPublic ? 'Public' : 'Private'}');
+    } else if (owner != null) {
+      final name = owner.displayName ?? owner.username;
+      parts.add('by $name');
     }
 
     return parts.where((p) => p.isNotEmpty).join(' · ');
@@ -220,9 +433,10 @@ class _PlanCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUserId = supabase.auth.currentUser!.id;
-    final activePlanId = ref.watch(activePlanProvider).valueOrNull?.id;
-    final isActive = activePlanId == plan.id;
+    // Active: the active plan is the copy; source plan's id will be copy's sourcePlanId
+    final activePlan = ref.watch(activePlanProvider).valueOrNull;
+    final isActive = activePlan?.sourcePlanId == plan.id;
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ListTile(
@@ -255,32 +469,38 @@ class _PlanCard extends ConsumerWidget {
           ],
         ),
         subtitle: Text(
-          _buildSubtitle(currentUserId),
+          _subtitle(),
           style: const TextStyle(color: Colors.white54, fontSize: 13),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (mode == _CardMode.owned)
+            // Favorite toggle — only on source plans, not copies
+            if (plan.sourcePlanId == null)
+              IconButton(
+                icon: Icon(
+                  _isFavorited ? Icons.favorite : Icons.favorite_border,
+                  color: _isFavorited ? Colors.red.shade300 : Colors.white38,
+                  size: 20,
+                ),
+                tooltip:
+                    _isFavorited ? 'Remove from favorites' : 'Add to favorites',
+                onPressed: () => _toggleFavorite(ref),
+              ),
+            // Owner actions
+            if (_isOwner)
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.white54),
                 onSelected: (v) {
                   if (v == 'delete') _deletePlan(context, ref);
                 },
-                itemBuilder: (_) => const [
+                itemBuilder: (_) => [
                   PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete plan',
-                        style: TextStyle(color: Colors.redAccent)),
+                        style: TextStyle(color: Colors.red.shade400)),
                   ),
                 ],
-              )
-            else if (mode == _CardMode.saved)
-              IconButton(
-                icon: const Icon(Icons.bookmark_remove_outlined,
-                    color: Colors.white54),
-                tooltip: 'Remove from saved',
-                onPressed: () => _unsavePlan(context, ref),
               )
             else
               const Icon(Icons.chevron_right),

@@ -12,6 +12,7 @@ _WorkoutPlanOwner _$WorkoutPlanOwnerFromJson(Map<String, dynamic> json) =>
       displayName: json['display_name'] as String?,
       avatarId: (json['avatar_id'] as num?)?.toInt(),
       avatarColor: json['avatar_color'] as String?,
+      isOfficial: json['is_official'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$WorkoutPlanOwnerToJson(_WorkoutPlanOwner instance) =>
@@ -20,6 +21,7 @@ Map<String, dynamic> _$WorkoutPlanOwnerToJson(_WorkoutPlanOwner instance) =>
       'display_name': instance.displayName,
       'avatar_id': instance.avatarId,
       'avatar_color': instance.avatarColor,
+      'is_official': instance.isOfficial,
     };
 
 _WorkoutPlan _$WorkoutPlanFromJson(Map<String, dynamic> json) => _WorkoutPlan(
@@ -47,6 +49,8 @@ _WorkoutPlan _$WorkoutPlanFromJson(Map<String, dynamic> json) => _WorkoutPlan(
   updatedAt: json['updated_at'] == null
       ? null
       : DateTime.parse(json['updated_at'] as String),
+  sourcePlanId: json['source_plan_id'] as String?,
+  isDeleted: json['is_deleted'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$WorkoutPlanToJson(_WorkoutPlan instance) =>
@@ -65,4 +69,6 @@ Map<String, dynamic> _$WorkoutPlanToJson(_WorkoutPlan instance) =>
       'profiles': instance.owner,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
+      'source_plan_id': instance.sourcePlanId,
+      'is_deleted': instance.isDeleted,
     };

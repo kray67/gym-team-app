@@ -47,5 +47,6 @@ abstract class PlanEditorState with _$PlanEditorState {
     @Default('intermediate') String difficulty,
     @Default('commercial_gym') String equipment,
     @Default([]) List<PlanEditorExercise> exercises,
+    @Default(false) bool isCopy,
   }) = _PlanEditorState;
 }

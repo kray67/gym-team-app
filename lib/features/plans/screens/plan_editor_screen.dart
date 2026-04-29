@@ -124,14 +124,15 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
                   ref.read(planEditorNotifierProvider.notifier).setDescription(v),
             ),
             const SizedBox(height: 4),
-            SwitchListTile(
-              title: const Text('Public'),
-              subtitle: const Text('Visible to other users'),
-              value: s.isPublic,
-              onChanged: (v) =>
-                  ref.read(planEditorNotifierProvider.notifier).setIsPublic(v),
-              contentPadding: EdgeInsets.zero,
-            ),
+            if (!s.isCopy)
+              SwitchListTile(
+                title: const Text('Public'),
+                subtitle: const Text('Visible to other users'),
+                value: s.isPublic,
+                onChanged: (v) =>
+                    ref.read(planEditorNotifierProvider.notifier).setIsPublic(v),
+                contentPadding: EdgeInsets.zero,
+              ),
 
             const Divider(height: 24),
 

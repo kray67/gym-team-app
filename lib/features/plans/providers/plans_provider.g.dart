@@ -6,60 +6,28 @@ part of 'plans_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$myPlansHash() => r'344402d3659e5ff58eced04742723a1a3df195c1';
+String _$allPlansHash() => r'817e0e3be1c8d67fddaec0bd610e77d2e7b45038';
 
-/// See also [myPlans].
-@ProviderFor(myPlans)
-final myPlansProvider = AutoDisposeFutureProvider<List<WorkoutPlan>>.internal(
-  myPlans,
-  name: r'myPlansProvider',
+/// All plans visible to the current user: public source plans + user's own
+/// non-copy private plans. Copies (source_plan_id IS NOT NULL) and
+/// soft-deleted plans are excluded.
+///
+/// Copied from [allPlans].
+@ProviderFor(allPlans)
+final allPlansProvider = AutoDisposeFutureProvider<List<WorkoutPlan>>.internal(
+  allPlans,
+  name: r'allPlansProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$myPlansHash,
+      : _$allPlansHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef MyPlansRef = AutoDisposeFutureProviderRef<List<WorkoutPlan>>;
-String _$savedPlansHash() => r'3666455b9e230f163fa6e5ee910fbd534d40bcdc';
-
-/// See also [savedPlans].
-@ProviderFor(savedPlans)
-final savedPlansProvider =
-    AutoDisposeFutureProvider<List<WorkoutPlan>>.internal(
-      savedPlans,
-      name: r'savedPlansProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$savedPlansHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SavedPlansRef = AutoDisposeFutureProviderRef<List<WorkoutPlan>>;
-String _$publicPlansHash() => r'352b061139994c0cd665d6f7acae04bd08caa88c';
-
-/// See also [publicPlans].
-@ProviderFor(publicPlans)
-final publicPlansProvider =
-    AutoDisposeFutureProvider<List<WorkoutPlan>>.internal(
-      publicPlans,
-      name: r'publicPlansProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$publicPlansHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef PublicPlansRef = AutoDisposeFutureProviderRef<List<WorkoutPlan>>;
-String _$planDetailHash() => r'2bba72c9314333198b6f85d67ab25637482d2de9';
+typedef AllPlansRef = AutoDisposeFutureProviderRef<List<WorkoutPlan>>;
+String _$planDetailHash() => r'a7ea908735580a18059f2fb0edc3736c699cb0fb';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -82,16 +50,28 @@ class _SystemHash {
   }
 }
 
-/// See also [planDetail].
+/// Full plan detail including exercises + sets. Works for both source plans
+/// and personal copies.
+///
+/// Copied from [planDetail].
 @ProviderFor(planDetail)
 const planDetailProvider = PlanDetailFamily();
 
-/// See also [planDetail].
+/// Full plan detail including exercises + sets. Works for both source plans
+/// and personal copies.
+///
+/// Copied from [planDetail].
 class PlanDetailFamily extends Family<AsyncValue<WorkoutPlan>> {
-  /// See also [planDetail].
+  /// Full plan detail including exercises + sets. Works for both source plans
+  /// and personal copies.
+  ///
+  /// Copied from [planDetail].
   const PlanDetailFamily();
 
-  /// See also [planDetail].
+  /// Full plan detail including exercises + sets. Works for both source plans
+  /// and personal copies.
+  ///
+  /// Copied from [planDetail].
   PlanDetailProvider call(String planId) {
     return PlanDetailProvider(planId);
   }
@@ -118,9 +98,15 @@ class PlanDetailFamily extends Family<AsyncValue<WorkoutPlan>> {
   String? get name => r'planDetailProvider';
 }
 
-/// See also [planDetail].
+/// Full plan detail including exercises + sets. Works for both source plans
+/// and personal copies.
+///
+/// Copied from [planDetail].
 class PlanDetailProvider extends AutoDisposeFutureProvider<WorkoutPlan> {
-  /// See also [planDetail].
+  /// Full plan detail including exercises + sets. Works for both source plans
+  /// and personal copies.
+  ///
+  /// Copied from [planDetail].
   PlanDetailProvider(String planId)
     : this._internal(
         (ref) => planDetail(ref as PlanDetailRef, planId),
@@ -199,25 +185,54 @@ class _PlanDetailProviderElement
   String get planId => (origin as PlanDetailProvider).planId;
 }
 
-String _$isPlanSavedHash() => r'd40cf01e9aaba610d8a6382638d12911c3a83683';
+String _$userFavoritePlanIdsHash() =>
+    r'951ffb6cf86de837115590e94a7e96631be8193d';
 
-/// See also [isPlanSaved].
-@ProviderFor(isPlanSaved)
-const isPlanSavedProvider = IsPlanSavedFamily();
+/// Set of plan IDs the current user has favorited (references source plans only).
+///
+/// Copied from [userFavoritePlanIds].
+@ProviderFor(userFavoritePlanIds)
+final userFavoritePlanIdsProvider =
+    AutoDisposeFutureProvider<Set<String>>.internal(
+      userFavoritePlanIds,
+      name: r'userFavoritePlanIdsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$userFavoritePlanIdsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-/// See also [isPlanSaved].
-class IsPlanSavedFamily extends Family<AsyncValue<bool>> {
-  /// See also [isPlanSaved].
-  const IsPlanSavedFamily();
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef UserFavoritePlanIdsRef = AutoDisposeFutureProviderRef<Set<String>>;
+String _$isPlanFavoritedHash() => r'1ad48418e4d350d079c6f9ec3d221fd05326631e';
 
-  /// See also [isPlanSaved].
-  IsPlanSavedProvider call(String planId) {
-    return IsPlanSavedProvider(planId);
+/// Whether the current user has favorited a specific source plan.
+///
+/// Copied from [isPlanFavorited].
+@ProviderFor(isPlanFavorited)
+const isPlanFavoritedProvider = IsPlanFavoritedFamily();
+
+/// Whether the current user has favorited a specific source plan.
+///
+/// Copied from [isPlanFavorited].
+class IsPlanFavoritedFamily extends Family<AsyncValue<bool>> {
+  /// Whether the current user has favorited a specific source plan.
+  ///
+  /// Copied from [isPlanFavorited].
+  const IsPlanFavoritedFamily();
+
+  /// Whether the current user has favorited a specific source plan.
+  ///
+  /// Copied from [isPlanFavorited].
+  IsPlanFavoritedProvider call(String planId) {
+    return IsPlanFavoritedProvider(planId);
   }
 
   @override
-  IsPlanSavedProvider getProviderOverride(
-    covariant IsPlanSavedProvider provider,
+  IsPlanFavoritedProvider getProviderOverride(
+    covariant IsPlanFavoritedProvider provider,
   ) {
     return call(provider.planId);
   }
@@ -234,26 +249,31 @@ class IsPlanSavedFamily extends Family<AsyncValue<bool>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'isPlanSavedProvider';
+  String? get name => r'isPlanFavoritedProvider';
 }
 
-/// See also [isPlanSaved].
-class IsPlanSavedProvider extends AutoDisposeFutureProvider<bool> {
-  /// See also [isPlanSaved].
-  IsPlanSavedProvider(String planId)
+/// Whether the current user has favorited a specific source plan.
+///
+/// Copied from [isPlanFavorited].
+class IsPlanFavoritedProvider extends AutoDisposeFutureProvider<bool> {
+  /// Whether the current user has favorited a specific source plan.
+  ///
+  /// Copied from [isPlanFavorited].
+  IsPlanFavoritedProvider(String planId)
     : this._internal(
-        (ref) => isPlanSaved(ref as IsPlanSavedRef, planId),
-        from: isPlanSavedProvider,
-        name: r'isPlanSavedProvider',
+        (ref) => isPlanFavorited(ref as IsPlanFavoritedRef, planId),
+        from: isPlanFavoritedProvider,
+        name: r'isPlanFavoritedProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$isPlanSavedHash,
-        dependencies: IsPlanSavedFamily._dependencies,
-        allTransitiveDependencies: IsPlanSavedFamily._allTransitiveDependencies,
+            : _$isPlanFavoritedHash,
+        dependencies: IsPlanFavoritedFamily._dependencies,
+        allTransitiveDependencies:
+            IsPlanFavoritedFamily._allTransitiveDependencies,
         planId: planId,
       );
 
-  IsPlanSavedProvider._internal(
+  IsPlanFavoritedProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -267,12 +287,12 @@ class IsPlanSavedProvider extends AutoDisposeFutureProvider<bool> {
 
   @override
   Override overrideWith(
-    FutureOr<bool> Function(IsPlanSavedRef provider) create,
+    FutureOr<bool> Function(IsPlanFavoritedRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: IsPlanSavedProvider._internal(
-        (ref) => create(ref as IsPlanSavedRef),
+      override: IsPlanFavoritedProvider._internal(
+        (ref) => create(ref as IsPlanFavoritedRef),
         from: from,
         name: null,
         dependencies: null,
@@ -285,12 +305,12 @@ class IsPlanSavedProvider extends AutoDisposeFutureProvider<bool> {
 
   @override
   AutoDisposeFutureProviderElement<bool> createElement() {
-    return _IsPlanSavedProviderElement(this);
+    return _IsPlanFavoritedProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is IsPlanSavedProvider && other.planId == planId;
+    return other is IsPlanFavoritedProvider && other.planId == planId;
   }
 
   @override
@@ -304,18 +324,39 @@ class IsPlanSavedProvider extends AutoDisposeFutureProvider<bool> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin IsPlanSavedRef on AutoDisposeFutureProviderRef<bool> {
+mixin IsPlanFavoritedRef on AutoDisposeFutureProviderRef<bool> {
   /// The parameter `planId` of this provider.
   String get planId;
 }
 
-class _IsPlanSavedProviderElement extends AutoDisposeFutureProviderElement<bool>
-    with IsPlanSavedRef {
-  _IsPlanSavedProviderElement(super.provider);
+class _IsPlanFavoritedProviderElement
+    extends AutoDisposeFutureProviderElement<bool>
+    with IsPlanFavoritedRef {
+  _IsPlanFavoritedProviderElement(super.provider);
 
   @override
-  String get planId => (origin as IsPlanSavedProvider).planId;
+  String get planId => (origin as IsPlanFavoritedProvider).planId;
 }
 
+String _$gymTeamUserIdHash() => r'8927796d44318b1230e2a7284932b09f33167d28';
+
+/// UUID of the GymTeam App official account (is_official = true on profiles).
+/// Returns null if the account has not been created yet.
+///
+/// Copied from [gymTeamUserId].
+@ProviderFor(gymTeamUserId)
+final gymTeamUserIdProvider = AutoDisposeFutureProvider<String?>.internal(
+  gymTeamUserId,
+  name: r'gymTeamUserIdProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$gymTeamUserIdHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef GymTeamUserIdRef = AutoDisposeFutureProviderRef<String?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

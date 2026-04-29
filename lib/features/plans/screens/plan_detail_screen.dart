@@ -66,7 +66,7 @@ Future<void> activatePlan(
     final stored = await ref.read(userPlan1rmProvider(plan.id).future);
     if (!context.mounted) return;
     final result =
-        await _showFullPlan1RMDialog(context, plan, prefilled: stored);
+        await showFullPlan1RMDialog(context, plan, prefilled: stored);
     if (result == null) return;
     oneRMs = result;
   }
@@ -212,8 +212,9 @@ Future<Map<String, double>?> _show1RMDialog(
 }
 
 /// Shows 1RM dialog collecting values for the whole plan (all weeks).
-/// Used when setting the active plan or restarting.
-Future<Map<String, double>?> _showFullPlan1RMDialog(
+/// Used when setting the active plan or restarting. Public so WorkoutScreen
+/// can reuse it for the "Update 1RM" option.
+Future<Map<String, double>?> showFullPlan1RMDialog(
     BuildContext context, WorkoutPlan plan,
     {Map<String, double> prefilled = const {}}) async {
   final percentExercises =
@@ -292,65 +293,6 @@ Future<Map<String, double>?> _showFullPlan1RMDialog(
   return result;
 }
 
-// ── Restart Plan helper ───────────────────────────────────────────────────────
-
-Future<void> _restartPlan(
-    BuildContext context, WidgetRef ref, WorkoutPlan plan) async {
-  final confirm = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Restart Plan?'),
-      content: const Text(
-        'This will reset your progress for this plan. Your workout history will be preserved.',
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel')),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
-          child: const Text('Restart'),
-        ),
-      ],
-    ),
-  );
-  if (confirm != true || !context.mounted) return;
-
-  Map<String, double> oneRMs = {};
-  final hasPercent1rm =
-      plan.exercises.any((e) => e.weightType == 'percent_1rm');
-  if (hasPercent1rm) {
-    final stored = await ref.read(userPlan1rmProvider(plan.id).future);
-    if (!context.mounted) return;
-    final result =
-        await _showFullPlan1RMDialog(context, plan, prefilled: stored);
-    if (result == null) return;
-    oneRMs = result;
-  }
-
-  if (!context.mounted) return;
-  try {
-    await ref
-        .read(planActiveNotifierProvider.notifier)
-        .restartPlan(plan.id, oneRMs);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Plan progress reset')),
-      );
-    }
-  } catch (e) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red.shade800,
-        ),
-      );
-    }
-  }
-}
-
 // ── Plan detail screen ────────────────────────────────────────────────────────
 
 class PlanDetailScreen extends ConsumerStatefulWidget {
@@ -381,7 +323,20 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
   Widget build(BuildContext context) {
     final async = ref.watch(planDetailProvider(widget.planId));
     final activePlan = ref.watch(activePlanProvider).valueOrNull;
-    final isActivePlan = activePlan?.id == widget.planId;
+
+    // A "copy" is a personal working clone (has a sourcePlanId).
+    final isCopy = async.valueOrNull?.sourcePlanId != null;
+
+    // isActivePlan:
+    //   viewing copy  → copy IS the active plan
+    //   viewing source → user has an active copy of this source
+    final isActivePlan = isCopy
+        ? activePlan?.id == widget.planId
+        : activePlan?.sourcePlanId == widget.planId;
+
+    // When viewing a source while a copy is active, progress lives on the copy.
+    final progressPlanId =
+        (isActivePlan && !isCopy) ? activePlan!.id : widget.planId;
 
     return Scaffold(
       appBar: AppBar(
@@ -399,75 +354,64 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         actions: [
           async.maybeWhen(
             data: (plan) {
-              final isOwner =
-                  plan.ownerId == supabase.auth.currentUser?.id;
-              final hasPercent1rm =
-                  plan.exercises.any((e) => e.weightType == 'percent_1rm');
-
+              final isOwner = plan.ownerId == supabase.auth.currentUser?.id;
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Options popup (active plan only)
-                  if (isActivePlan)
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert),
-                      onSelected: (value) async {
-                        if (value == 'edit_1rm') {
-                          final stored = await ref
-                              .read(userPlan1rmProvider(widget.planId).future);
-                          if (!context.mounted) return;
-                          final result = await _showFullPlan1RMDialog(
-                              context, plan,
-                              prefilled: stored);
-                          if (result == null || !context.mounted) return;
-                          try {
-                            for (final entry in result.entries) {
-                              await ref
-                                  .read(planActiveNotifierProvider.notifier)
-                                  .update1rm(
-                                      widget.planId, entry.key, entry.value);
-                            }
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('1RM values updated')),
-                              );
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Error: $e'),
-                                  backgroundColor: Colors.red.shade800,
-                                ),
-                              );
-                            }
-                          }
-                        } else if (value == 'restart') {
-                          await _restartPlan(context, ref, plan);
-                        }
-                      },
-                      itemBuilder: (ctx) => [
-                        if (hasPercent1rm)
-                          const PopupMenuItem(
-                            value: 'edit_1rm',
-                            child: Text('Edit 1RM'),
-                          ),
-                        const PopupMenuItem(
-                          value: 'restart',
-                          child: Text('Restart Plan'),
-                        ),
-                      ],
-                    ),
-                  // Edit plan (owner only)
+                  // Edit plan (owner only).
+                  // For SOURCE plans: warn if copies already exist.
+                  // For COPY plans: go directly to editor.
                   if (isOwner)
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
-                      onPressed: () {
+                      onPressed: () async {
+                        if (!isCopy) {
+                          final existing = await supabase
+                              .from('workout_plans')
+                              .select('id')
+                              .eq('source_plan_id', plan.id)
+                              .limit(1)
+                              .maybeSingle();
+                          if (!context.mounted) return;
+                          if (existing != null) {
+                            final proceed = await showDialog<String>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Edit Source Plan?'),
+                                content: const Text(
+                                  'Changes won\'t affect users who have already '
+                                  'activated this plan. Consider creating a new '
+                                  'plan instead.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, 'new'),
+                                    child: const Text('Create New Plan'),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, 'edit'),
+                                    child: const Text('Edit Anyway'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (!context.mounted) return;
+                            if (proceed == 'new') {
+                              ref
+                                  .read(planEditorNotifierProvider.notifier)
+                                  .startNew();
+                              context.push('/plans/new');
+                              return;
+                            }
+                            if (proceed != 'edit') return;
+                          }
+                        }
                         ref
                             .read(planEditorNotifierProvider.notifier)
                             .startEdit(plan);
-                        context.push('/plans/new');
+                        if (context.mounted) context.push('/plans/new');
                       },
                     ),
                 ],
@@ -482,7 +426,11 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (plan) => _PlanDetailBody(
           plan: plan,
+          isCopy: isCopy,
           isActivePlan: isActivePlan,
+          progressPlanId: progressPlanId,
+          activeCopyId:
+              (isActivePlan && !isCopy) ? activePlan?.id : null,
           tabController: _tabController,
         ),
       ),
@@ -494,25 +442,31 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
 class _PlanDetailBody extends ConsumerWidget {
   final WorkoutPlan plan;
+  final bool isCopy;
   final bool isActivePlan;
+  final String progressPlanId;
+  final String? activeCopyId;
   final TabController tabController;
 
   const _PlanDetailBody({
     required this.plan,
+    required this.isCopy,
     required this.isActivePlan,
+    required this.progressPlanId,
+    required this.activeCopyId,
     required this.tabController,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final completed =
-        ref.watch(planCompletedSessionsProvider(plan.id)).valueOrNull ?? {};
+        ref.watch(planCompletedSessionsProvider(progressPlanId)).valueOrNull ??
+            {};
     final isOwner = plan.ownerId == supabase.auth.currentUser?.id;
 
     final weeks = plan.weeks ?? 1;
     final sessionsPerWeek = plan.sessionsPerWeek ?? 1;
 
-    // Find next incomplete session
     (int, int)? nextSession;
     outer:
     for (var w = 1; w <= weeks; w++) {
@@ -530,64 +484,69 @@ class _PlanDetailBody extends ConsumerWidget {
           child: TabBarView(
             controller: tabController,
             children: [
-              // ── Overview tab ──────────────────────────────────────────────
-              _OverviewTab(plan: plan, isOwner: isOwner),
-              // ── Workouts tab ──────────────────────────────────────────────
+              _OverviewTab(plan: plan, isOwner: isOwner, isCopy: isCopy),
               _WorkoutsTab(
                 plan: plan,
                 completed: completed,
                 nextSession: nextSession,
                 isActivePlan: isActivePlan,
+                isCopy: isCopy,
               ),
             ],
           ),
         ),
 
-        // Bottom action bar
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    if (!isOwner) ...[
-                      _SaveButton(planId: plan.id),
-                      const SizedBox(width: 8),
-                    ],
-                    Expanded(
-                      child: _ActivePlanButton(
-                          plan: plan, isActivePlan: isActivePlan),
+        // Bottom action bar — hidden entirely for inactive copies (archived)
+        if (!isCopy || isActivePlan)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!isCopy)
+                    Row(
+                      children: [
+                        if (!isOwner) ...[
+                          _FavoriteButton(planId: plan.id),
+                          const SizedBox(width: 8),
+                        ],
+                        Expanded(
+                          child: _ActivePlanButton(
+                            plan: plan,
+                            isActivePlan: isActivePlan,
+                            activeCopyId: activeCopyId,
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (isActivePlan) ...[
+                    if (!isCopy) const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: nextSession != null
+                          ? FilledButton.icon(
+                              onPressed: plan.exercises.isEmpty
+                                  ? null
+                                  : () => startPlanSession(context, ref, plan,
+                                      nextSession!.$1, nextSession.$2),
+                              icon: const Icon(Icons.play_arrow),
+                              label: Text(
+                                  'Start Week ${nextSession.$1} · Day ${nextSession.$2}'),
+                            )
+                          : FilledButton.icon(
+                              onPressed: () =>
+                                  startPlanSession(context, ref, plan, 1, 1),
+                              icon: const Icon(Icons.replay),
+                              label:
+                                  const Text('Restart from Week 1 · Day 1'),
+                            ),
                     ),
                   ],
-                ),
-                if (isActivePlan) ...[
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: nextSession != null
-                        ? FilledButton.icon(
-                            onPressed: plan.exercises.isEmpty
-                                ? null
-                                : () => startPlanSession(context, ref, plan,
-                                    nextSession!.$1, nextSession.$2),
-                            icon: const Icon(Icons.play_arrow),
-                            label: Text(
-                                'Start Week ${nextSession.$1} · Day ${nextSession.$2}'),
-                          )
-                        : FilledButton.icon(
-                            onPressed: () =>
-                                startPlanSession(context, ref, plan, 1, 1),
-                            icon: const Icon(Icons.replay),
-                            label: const Text('Restart from Week 1 · Day 1'),
-                          ),
-                  ),
                 ],
-              ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -598,8 +557,13 @@ class _PlanDetailBody extends ConsumerWidget {
 class _OverviewTab extends StatelessWidget {
   final WorkoutPlan plan;
   final bool isOwner;
+  final bool isCopy;
 
-  const _OverviewTab({required this.plan, required this.isOwner});
+  const _OverviewTab({
+    required this.plan,
+    required this.isOwner,
+    required this.isCopy,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -618,6 +582,34 @@ class _OverviewTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       children: [
+        // "Based on" row for personal copies
+        if (isCopy && plan.sourcePlanId != null) ...[
+          Builder(builder: (ctx) {
+            return InkWell(
+              onTap: () => ctx.push('/plans/${plan.sourcePlanId}'),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.copy_outlined,
+                        size: 16,
+                        color: Theme.of(ctx).colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Based on original plan · View original →',
+                      style: TextStyle(
+                        color: Theme.of(ctx).colorScheme.primary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+
         // Owner row (for plans you don't own)
         if (!isOwner && plan.owner != null) ...[
           Builder(builder: (ctx) {
@@ -763,12 +755,14 @@ class _WorkoutsTab extends StatelessWidget {
   final Set<(int, int)> completed;
   final (int, int)? nextSession;
   final bool isActivePlan;
+  final bool isCopy;
 
   const _WorkoutsTab({
     required this.plan,
     required this.completed,
     required this.nextSession,
     required this.isActivePlan,
+    required this.isCopy,
   });
 
   @override
@@ -787,6 +781,7 @@ class _WorkoutsTab extends StatelessWidget {
             completed: completed,
             nextSession: nextSession,
             isActivePlan: isActivePlan,
+            isCopy: isCopy,
           ),
       ],
     );
@@ -802,6 +797,7 @@ class _WeekAccordion extends ConsumerWidget {
   final Set<(int, int)> completed;
   final (int, int)? nextSession;
   final bool isActivePlan;
+  final bool isCopy;
 
   const _WeekAccordion({
     required this.weekNumber,
@@ -810,6 +806,7 @@ class _WeekAccordion extends ConsumerWidget {
     required this.completed,
     required this.nextSession,
     required this.isActivePlan,
+    required this.isCopy,
   });
 
   @override
@@ -861,6 +858,7 @@ class _WeekAccordion extends ConsumerWidget {
                       isCompleted: completed.contains((weekNumber, d)),
                       isNext: nextSession == (weekNumber, d),
                       isActivePlan: isActivePlan,
+                      isCopy: isCopy,
                     ),
                 ],
               ),
@@ -881,6 +879,7 @@ class _SessionCard extends ConsumerWidget {
   final bool isCompleted;
   final bool isNext;
   final bool isActivePlan;
+  final bool isCopy;
 
   const _SessionCard({
     required this.plan,
@@ -889,6 +888,7 @@ class _SessionCard extends ConsumerWidget {
     required this.isCompleted,
     required this.isNext,
     required this.isActivePlan,
+    required this.isCopy,
   });
 
   @override
@@ -1027,7 +1027,7 @@ class _SessionCard extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 4),
-                        ] else if (!isCompleted) ...[
+                        ] else if (!isCopy && !isCompleted) ...[
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -1147,60 +1147,27 @@ String _setTargetDescription(PlanExercise e,
 class _ActivePlanButton extends ConsumerWidget {
   final WorkoutPlan plan;
   final bool isActivePlan;
+  final String? activeCopyId;
 
-  const _ActivePlanButton(
-      {required this.plan, required this.isActivePlan});
+  const _ActivePlanButton({
+    required this.plan,
+    required this.isActivePlan,
+    required this.activeCopyId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (isActivePlan) {
       return OutlinedButton.icon(
-        onPressed: () async {
-          final confirm = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Remove Active Plan?'),
-              content: const Text(
-                  'This plan will no longer be active and all progress will be reset.'),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    child: const Text('Cancel')),
-                FilledButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Remove'),
-                ),
-              ],
-            ),
-          );
-          if (confirm == true) {
-            try {
-              await ref
-                  .read(planActiveNotifierProvider.notifier)
-                  .clearActivePlan(plan.id);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Active plan removed')),
-                );
-              }
-            } catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error: $e'),
-                    backgroundColor: Colors.red.shade800,
-                  ),
-                );
-              }
-            }
-          }
-        },
+        onPressed: activeCopyId != null
+            ? () => context.push('/plans/$activeCopyId')
+            : null,
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.green,
           side: const BorderSide(color: Colors.green),
         ),
         icon: const Icon(Icons.check_circle_outline, size: 18),
-        label: const Text('Active Plan'),
+        label: const Text('Active · View Copy →'),
       );
     }
 
@@ -1212,36 +1179,37 @@ class _ActivePlanButton extends ConsumerWidget {
   }
 }
 
-// ── Save button ───────────────────────────────────────────────────────────────
+// ── Favorite button ───────────────────────────────────────────────────────────
 
-class _SaveButton extends ConsumerWidget {
+class _FavoriteButton extends ConsumerWidget {
   final String planId;
-  const _SaveButton({required this.planId});
+  const _FavoriteButton({required this.planId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(isPlanSavedProvider(planId));
-    final isSaved = async.valueOrNull ?? false;
+    final async = ref.watch(isPlanFavoritedProvider(planId));
+    final isFavorited = async.valueOrNull ?? false;
 
     return OutlinedButton.icon(
       onPressed: () async {
         final userId = supabase.auth.currentUser!.id;
-        if (isSaved) {
+        if (isFavorited) {
           await supabase
-              .from('saved_plans')
+              .from('plan_favorites')
               .delete()
               .eq('user_id', userId)
               .eq('plan_id', planId);
         } else {
           await supabase
-              .from('saved_plans')
+              .from('plan_favorites')
               .insert({'user_id': userId, 'plan_id': planId});
         }
-        ref.invalidate(isPlanSavedProvider(planId));
-        ref.invalidate(savedPlansProvider);
+        ref.invalidate(isPlanFavoritedProvider(planId));
+        ref.invalidate(userFavoritePlanIdsProvider);
       },
-      icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_outline),
-      label: Text(isSaved ? 'Saved' : 'Save'),
+      icon: Icon(isFavorited ? Icons.favorite : Icons.favorite_border,
+          size: 18),
+      label: Text(isFavorited ? 'Favorited' : 'Favorite'),
     );
   }
 }

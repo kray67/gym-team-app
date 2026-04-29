@@ -97,6 +97,39 @@ class WorkoutHistoryScreen extends ConsumerWidget {
   }
 }
 
+// ── History list (used as the History tab inside WorkoutScreen) ───────────────
+
+/// The workout history list without a Scaffold. Used as the History tab body
+/// inside [WorkoutScreen].
+class WorkoutHistoryList extends ConsumerWidget {
+  const WorkoutHistoryList({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final history = ref.watch(workoutHistoryProvider);
+    return history.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data: (sessions) {
+        if (sessions.isEmpty) {
+          return const Center(
+            child: Text(
+              'No workouts yet.\nStart a session to see your history here.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white54),
+            ),
+          );
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: sessions.length,
+          itemBuilder: (context, i) => _SessionCard(session: sessions[i]),
+        );
+      },
+    );
+  }
+}
+
 // ── Active plan bar ───────────────────────────────────────────────────────────
 
 class _ActivePlanBar extends ConsumerWidget {

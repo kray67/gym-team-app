@@ -50,13 +50,13 @@ lib/
 
 ## Database Schema (Supabase / Postgres)
 ```
-profiles             -- extends auth.users: username, display_name, bio, avatar_url, avatar_id (int), avatar_color (text), active_plan_id (uuid → workout_plans)
+profiles             -- extends auth.users: username, display_name, bio, avatar_url, avatar_id (int), avatar_color (text), active_plan_id (uuid → workout_plans), is_official (bool default false — GymTeam App account), theme_color (text)
 follows              -- (follower_id, following_id) composite PK
 exercises            -- catalog: name, category, muscle_group, is_custom, created_by, tracking_type (text, default 'weight_reps')
-workout_plans        -- title, description, is_public, owner_id
+workout_plans        -- title, description, is_public, owner_id, source_plan_id (uuid self-ref ON DELETE SET NULL — non-null = personal copy), is_deleted (bool — soft-delete for copies; history still joins the row)
 plan_exercises       -- plan_id, exercise_id, position, goal_type, weight_type, week_number, session_number, superset_group_id, note
 plan_exercise_sets   -- plan_exercise_id, set_number, target_reps, target_reps_max, target_weight (% 1RM), target_rpe, target_rpe_max, is_warmup, weight_increment, target_duration_secs
-saved_plans          -- (user_id, plan_id) — users saving others' plans
+plan_favorites       -- (user_id, plan_id) — renamed from saved_plans; references source plans only (never copies)
 user_plan_1rm        -- user_id, plan_id, exercise_id, one_rm_kg, updated_at; UNIQUE(user_id, plan_id, exercise_id)
 user_plan_progress   -- user_id, plan_id, restarted_at; PK(user_id, plan_id); tracks when a plan was last reset
 workout_sessions     -- user_id, plan_id?, started_at, ended_at, duration_secs
@@ -87,8 +87,8 @@ exercise_records     -- user_id, exercise_id, record_type (text), value (numeric
 | Feature | Screens |
 |---|---|
 | Social | SocialScreen (Feed + Users + Leaderboard tabs), FeedWorkoutDetailScreen, UserProfileScreen |
-| Workout | ActiveWorkoutScreen ⭐, WorkoutSummaryScreen, WorkoutHistoryScreen, WorkoutDetailScreen, ExercisePickerScreen |
-| Plans | PlansListScreen, PlanDetailScreen, PlanEditorScreen, DiscoverPlansScreen, PlanSessionBuilderScreen (session editor) |
+| Workout | WorkoutScreen (Workout + History tabs), ActiveWorkoutScreen ⭐, WorkoutSummaryScreen, WorkoutHistoryScreen, WorkoutDetailScreen, ExercisePickerScreen |
+| Plans | PlansListScreen (unified + filters), PlanDetailScreen, PlanEditorScreen, PlanSessionBuilderScreen (session editor) |
 | Profile | MyProfileScreen, EditProfileScreen, FollowersScreen, SettingsScreen, MyExercisesScreen |
 
 ## Build Phases
@@ -239,15 +239,21 @@ Both `ActiveWorkoutScreen` and `SessionEditorScreen` use a slot-based list model
 - Returns `ExercisePickerResult(exercises: [...], asSuperset: bool)`
 - Selection order shown as green CircleAvatar with index number on each selected exercise
 
-### Active plan & 1RM architecture
-- `profiles.active_plan_id` — single column storing which plan is currently "active" for the user (null if none); `ON DELETE SET NULL`
-- `user_plan_1rm` table — persists 1RM values per (user, plan, exercise); upserted via `PlanActiveNotifier.setActivePlan()` and `update1rm()`; RLS: users manage own rows only
-- `activePlanProvider` (in `plan_active_notifier.dart`) — `AsyncNotifier` that reads `profiles.active_plan_id` then fetches the full plan; `keepAlive: true`
+### Copy-on-activation & active plan architecture
+- `profiles.active_plan_id` — points to the user's personal **copy** of the plan (not the source); `ON DELETE SET NULL`
+- **Copy-on-activation**: `setActivePlan(sourcePlanId, oneRMs)` always creates (or restores) a private copy before setting `active_plan_id`. The copy has `source_plan_id = sourcePlanId`, `is_public = false`, `owner_id = userId`
+- **Re-activation restores copies**: `_getOrCreateCopy()` first queries for a soft-deleted copy (`is_deleted = true`) of the same source+user; if found it restores it (`is_deleted = false`) instead of creating a new row — preserves history
+- **Archive ("deactivate")**: `clearActivePlan(copyPlanId)` sets `is_deleted = true` on the copy and nulls `profiles.active_plan_id`; workout history retains the plan title via the soft-deleted row
+- **Restart plan**: `restartPlan(copyPlanId, oneRMs)` upserts `user_plan_progress.restarted_at = now()` on the copy — progress tracking resets without recreating the copy
+- **Plans list shows only source plans**: `allPlansProvider` filters `source_plan_id IS NULL AND is_deleted = false`; copies are never listed
+- **Progress tracking uses copy's plan_id**: `planCompletedSessionsProvider(progressPlanId)` — when viewing a source plan while a copy is active, `progressPlanId = activePlan.id` (the copy), not the source plan's id
+- `user_plan_1rm` — persists 1RM values per (user, plan, exercise); keyed on the copy's plan_id; upserted via `setActivePlan()` and `update1rm()`
+- `activePlanProvider` — `AsyncNotifier` that reads `profiles.active_plan_id` then fetches the full copy plan detail; `keepAlive: true`
 - `userPlan1rmProvider(planId)` — family provider returning `Map<exerciseId, double>` from `user_plan_1rm`
-- `PlanActiveNotifier` — `setActivePlan(planId, oneRMs)`, `clearActivePlan(planId)`, `update1rm(planId, exerciseId, kg)`, `restartPlan(planId, oneRMs)`
-- `clearActivePlan(planId)` — clears `profiles.active_plan_id`, upserts a `restarted_at` timestamp into `user_plan_progress` (resets completed-session counts), invalidates `activePlanProvider` + `planCompletedSessionsProvider(planId)`
-- `planCompletedSessionsProvider(planId)` — queries `workout_sessions` filtered by `plan_id`/`user_id`; checks `user_plan_progress.restarted_at` and only counts sessions after that timestamp; gracefully ignores if table query fails
-- `startWorkoutFromPlan` in `ActiveWorkoutNotifier` — reads 1RM from `userPlan1rmProvider` directly (no caller-supplied map); handles `prev_week_plus` / `prev_session_plus` by querying past `workout_sessions`
+- `planCompletedSessionsProvider(planId)` — queries `workout_sessions` filtered by `plan_id`/`user_id`; checks `user_plan_progress.restarted_at` and only counts sessions after that timestamp
+- `startWorkoutFromPlan` in `ActiveWorkoutNotifier` — reads 1RM from `userPlan1rmProvider` directly; operates on the copy plan object
+- **GymTeam App user**: special Supabase account with `profiles.is_official = true`; plans appear with "by GymTeam App" label; `gymTeamUserIdProvider` caches its UUID; "GymTeam App" filter chip in PlansListScreen uses `plan.owner?.isOfficial == true`
+- **Plan editor copy guard**: `startEdit(plan)` sets `isCopy = plan.sourcePlanId != null`; `savePlan()` forces `is_public = false` for copies; feed event only fires for new public source plans; `isPublic` toggle hidden in editor UI when `state.isCopy`
 
 ### TARGET column in ActiveWorkoutScreen
 - Only shown for plan-based workouts (`state.planId != null`)
@@ -258,5 +264,5 @@ Both `ActiveWorkoutScreen` and `SessionEditorScreen` use a slot-based list model
 
 ## Color Scheme & Icon Variants
 - **Theme color persistence**: requires `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_color text;` in Supabase; `ThemeColorNotifier.build()` queries this column on launch; `setColor()` updates state immediately then persists to DB — without the column the DB write fails silently and restarts default to purple
-- **Active chip on plan cards**: `_PlanCard` in `plans_list_screen.dart` watches `activePlanProvider`; when `activePlanId == plan.id`, a green pill badge ("Active") is inserted into the `title` `Row` alongside the plan name
+- **Active chip on plan cards**: `_PlanCard` in `plans_list_screen.dart` watches `activePlanProvider`; checks `activePlan?.sourcePlanId == plan.id` (list shows source plans; the active plan IS the copy) — green "Active" pill badge in title `Row`
 - **SVG icon variants**: `assets/icon/icon_blue.svg` / `icon_yellow.svg` / `icon_orange.svg` — source SVGs matching each accent color scheme; splash is build-time only — to change: export SVG to 1024×1024 PNG → replace `assets/icon/icon.png` → update `flutter_native_splash.yaml` `color` → `dart run flutter_native_splash:create` → rebuild APK

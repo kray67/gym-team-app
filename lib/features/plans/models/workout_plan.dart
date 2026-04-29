@@ -11,6 +11,7 @@ abstract class WorkoutPlanOwner with _$WorkoutPlanOwner {
     @JsonKey(name: 'display_name') String? displayName,
     @JsonKey(name: 'avatar_id') int? avatarId,
     @JsonKey(name: 'avatar_color') String? avatarColor,
+    @JsonKey(name: 'is_official') @Default(false) bool isOfficial,
   }) = _WorkoutPlanOwner;
 
   factory WorkoutPlanOwner.fromJson(Map<String, dynamic> json) =>
@@ -34,6 +35,8 @@ abstract class WorkoutPlan with _$WorkoutPlan {
     @JsonKey(name: 'profiles') WorkoutPlanOwner? owner,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
+    @JsonKey(name: 'source_plan_id') String? sourcePlanId,
+    @JsonKey(name: 'is_deleted') @Default(false) bool isDeleted,
   }) = _WorkoutPlan;
 
   factory WorkoutPlan.fromJson(Map<String, dynamic> json) =>

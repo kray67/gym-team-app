@@ -100,6 +100,7 @@ Future<List<UserProfile>> allUsers(AllUsersRef ref) async {
       .from('profiles')
       .select()
       .neq('id', currentUserId)
+      .eq('is_official', false)
       .order('created_at');
   return (data as List)
       .map((e) => UserProfile.fromJson(e as Map<String, dynamic>))

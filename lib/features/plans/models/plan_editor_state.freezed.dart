@@ -610,7 +610,7 @@ $ExerciseCopyWith<$Res> get exercise {
 /// @nodoc
 mixin _$PlanEditorState {
 
- String? get planId; String get title; String get description; bool get isPublic; int get weeks; int get sessionsPerWeek; int get avgDurationMins; String get difficulty; String get equipment; List<PlanEditorExercise> get exercises;
+ String? get planId; String get title; String get description; bool get isPublic; int get weeks; int get sessionsPerWeek; int get avgDurationMins; String get difficulty; String get equipment; List<PlanEditorExercise> get exercises; bool get isCopy;
 /// Create a copy of PlanEditorState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -621,16 +621,16 @@ $PlanEditorStateCopyWith<PlanEditorState> get copyWith => _$PlanEditorStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanEditorState&&(identical(other.planId, planId) || other.planId == planId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.weeks, weeks) || other.weeks == weeks)&&(identical(other.sessionsPerWeek, sessionsPerWeek) || other.sessionsPerWeek == sessionsPerWeek)&&(identical(other.avgDurationMins, avgDurationMins) || other.avgDurationMins == avgDurationMins)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&const DeepCollectionEquality().equals(other.exercises, exercises));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanEditorState&&(identical(other.planId, planId) || other.planId == planId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.weeks, weeks) || other.weeks == weeks)&&(identical(other.sessionsPerWeek, sessionsPerWeek) || other.sessionsPerWeek == sessionsPerWeek)&&(identical(other.avgDurationMins, avgDurationMins) || other.avgDurationMins == avgDurationMins)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&const DeepCollectionEquality().equals(other.exercises, exercises)&&(identical(other.isCopy, isCopy) || other.isCopy == isCopy));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,planId,title,description,isPublic,weeks,sessionsPerWeek,avgDurationMins,difficulty,equipment,const DeepCollectionEquality().hash(exercises));
+int get hashCode => Object.hash(runtimeType,planId,title,description,isPublic,weeks,sessionsPerWeek,avgDurationMins,difficulty,equipment,const DeepCollectionEquality().hash(exercises),isCopy);
 
 @override
 String toString() {
-  return 'PlanEditorState(planId: $planId, title: $title, description: $description, isPublic: $isPublic, weeks: $weeks, sessionsPerWeek: $sessionsPerWeek, avgDurationMins: $avgDurationMins, difficulty: $difficulty, equipment: $equipment, exercises: $exercises)';
+  return 'PlanEditorState(planId: $planId, title: $title, description: $description, isPublic: $isPublic, weeks: $weeks, sessionsPerWeek: $sessionsPerWeek, avgDurationMins: $avgDurationMins, difficulty: $difficulty, equipment: $equipment, exercises: $exercises, isCopy: $isCopy)';
 }
 
 
@@ -641,7 +641,7 @@ abstract mixin class $PlanEditorStateCopyWith<$Res>  {
   factory $PlanEditorStateCopyWith(PlanEditorState value, $Res Function(PlanEditorState) _then) = _$PlanEditorStateCopyWithImpl;
 @useResult
 $Res call({
- String? planId, String title, String description, bool isPublic, int weeks, int sessionsPerWeek, int avgDurationMins, String difficulty, String equipment, List<PlanEditorExercise> exercises
+ String? planId, String title, String description, bool isPublic, int weeks, int sessionsPerWeek, int avgDurationMins, String difficulty, String equipment, List<PlanEditorExercise> exercises, bool isCopy
 });
 
 
@@ -658,7 +658,7 @@ class _$PlanEditorStateCopyWithImpl<$Res>
 
 /// Create a copy of PlanEditorState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? planId = freezed,Object? title = null,Object? description = null,Object? isPublic = null,Object? weeks = null,Object? sessionsPerWeek = null,Object? avgDurationMins = null,Object? difficulty = null,Object? equipment = null,Object? exercises = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? planId = freezed,Object? title = null,Object? description = null,Object? isPublic = null,Object? weeks = null,Object? sessionsPerWeek = null,Object? avgDurationMins = null,Object? difficulty = null,Object? equipment = null,Object? exercises = null,Object? isCopy = null,}) {
   return _then(_self.copyWith(
 planId: freezed == planId ? _self.planId : planId // ignore: cast_nullable_to_non_nullable
 as String?,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -670,7 +670,8 @@ as int,avgDurationMins: null == avgDurationMins ? _self.avgDurationMins : avgDur
 as int,difficulty: null == difficulty ? _self.difficulty : difficulty // ignore: cast_nullable_to_non_nullable
 as String,equipment: null == equipment ? _self.equipment : equipment // ignore: cast_nullable_to_non_nullable
 as String,exercises: null == exercises ? _self.exercises : exercises // ignore: cast_nullable_to_non_nullable
-as List<PlanEditorExercise>,
+as List<PlanEditorExercise>,isCopy: null == isCopy ? _self.isCopy : isCopy // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -755,10 +756,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? planId,  String title,  String description,  bool isPublic,  int weeks,  int sessionsPerWeek,  int avgDurationMins,  String difficulty,  String equipment,  List<PlanEditorExercise> exercises)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? planId,  String title,  String description,  bool isPublic,  int weeks,  int sessionsPerWeek,  int avgDurationMins,  String difficulty,  String equipment,  List<PlanEditorExercise> exercises,  bool isCopy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlanEditorState() when $default != null:
-return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises);case _:
+return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises,_that.isCopy);case _:
   return orElse();
 
 }
@@ -776,10 +777,10 @@ return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? planId,  String title,  String description,  bool isPublic,  int weeks,  int sessionsPerWeek,  int avgDurationMins,  String difficulty,  String equipment,  List<PlanEditorExercise> exercises)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? planId,  String title,  String description,  bool isPublic,  int weeks,  int sessionsPerWeek,  int avgDurationMins,  String difficulty,  String equipment,  List<PlanEditorExercise> exercises,  bool isCopy)  $default,) {final _that = this;
 switch (_that) {
 case _PlanEditorState():
-return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises);case _:
+return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises,_that.isCopy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -796,10 +797,10 @@ return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? planId,  String title,  String description,  bool isPublic,  int weeks,  int sessionsPerWeek,  int avgDurationMins,  String difficulty,  String equipment,  List<PlanEditorExercise> exercises)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? planId,  String title,  String description,  bool isPublic,  int weeks,  int sessionsPerWeek,  int avgDurationMins,  String difficulty,  String equipment,  List<PlanEditorExercise> exercises,  bool isCopy)?  $default,) {final _that = this;
 switch (_that) {
 case _PlanEditorState() when $default != null:
-return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises);case _:
+return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises,_that.isCopy);case _:
   return null;
 
 }
@@ -811,7 +812,7 @@ return $default(_that.planId,_that.title,_that.description,_that.isPublic,_that.
 
 
 class _PlanEditorState implements PlanEditorState {
-  const _PlanEditorState({this.planId, this.title = '', this.description = '', this.isPublic = false, this.weeks = 4, this.sessionsPerWeek = 3, this.avgDurationMins = 60, this.difficulty = 'intermediate', this.equipment = 'commercial_gym', final  List<PlanEditorExercise> exercises = const []}): _exercises = exercises;
+  const _PlanEditorState({this.planId, this.title = '', this.description = '', this.isPublic = false, this.weeks = 4, this.sessionsPerWeek = 3, this.avgDurationMins = 60, this.difficulty = 'intermediate', this.equipment = 'commercial_gym', final  List<PlanEditorExercise> exercises = const [], this.isCopy = false}): _exercises = exercises;
   
 
 @override final  String? planId;
@@ -830,6 +831,7 @@ class _PlanEditorState implements PlanEditorState {
   return EqualUnmodifiableListView(_exercises);
 }
 
+@override@JsonKey() final  bool isCopy;
 
 /// Create a copy of PlanEditorState
 /// with the given fields replaced by the non-null parameter values.
@@ -841,16 +843,16 @@ _$PlanEditorStateCopyWith<_PlanEditorState> get copyWith => __$PlanEditorStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanEditorState&&(identical(other.planId, planId) || other.planId == planId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.weeks, weeks) || other.weeks == weeks)&&(identical(other.sessionsPerWeek, sessionsPerWeek) || other.sessionsPerWeek == sessionsPerWeek)&&(identical(other.avgDurationMins, avgDurationMins) || other.avgDurationMins == avgDurationMins)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&const DeepCollectionEquality().equals(other._exercises, _exercises));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanEditorState&&(identical(other.planId, planId) || other.planId == planId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.weeks, weeks) || other.weeks == weeks)&&(identical(other.sessionsPerWeek, sessionsPerWeek) || other.sessionsPerWeek == sessionsPerWeek)&&(identical(other.avgDurationMins, avgDurationMins) || other.avgDurationMins == avgDurationMins)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&const DeepCollectionEquality().equals(other._exercises, _exercises)&&(identical(other.isCopy, isCopy) || other.isCopy == isCopy));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,planId,title,description,isPublic,weeks,sessionsPerWeek,avgDurationMins,difficulty,equipment,const DeepCollectionEquality().hash(_exercises));
+int get hashCode => Object.hash(runtimeType,planId,title,description,isPublic,weeks,sessionsPerWeek,avgDurationMins,difficulty,equipment,const DeepCollectionEquality().hash(_exercises),isCopy);
 
 @override
 String toString() {
-  return 'PlanEditorState(planId: $planId, title: $title, description: $description, isPublic: $isPublic, weeks: $weeks, sessionsPerWeek: $sessionsPerWeek, avgDurationMins: $avgDurationMins, difficulty: $difficulty, equipment: $equipment, exercises: $exercises)';
+  return 'PlanEditorState(planId: $planId, title: $title, description: $description, isPublic: $isPublic, weeks: $weeks, sessionsPerWeek: $sessionsPerWeek, avgDurationMins: $avgDurationMins, difficulty: $difficulty, equipment: $equipment, exercises: $exercises, isCopy: $isCopy)';
 }
 
 
@@ -861,7 +863,7 @@ abstract mixin class _$PlanEditorStateCopyWith<$Res> implements $PlanEditorState
   factory _$PlanEditorStateCopyWith(_PlanEditorState value, $Res Function(_PlanEditorState) _then) = __$PlanEditorStateCopyWithImpl;
 @override @useResult
 $Res call({
- String? planId, String title, String description, bool isPublic, int weeks, int sessionsPerWeek, int avgDurationMins, String difficulty, String equipment, List<PlanEditorExercise> exercises
+ String? planId, String title, String description, bool isPublic, int weeks, int sessionsPerWeek, int avgDurationMins, String difficulty, String equipment, List<PlanEditorExercise> exercises, bool isCopy
 });
 
 
@@ -878,7 +880,7 @@ class __$PlanEditorStateCopyWithImpl<$Res>
 
 /// Create a copy of PlanEditorState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? planId = freezed,Object? title = null,Object? description = null,Object? isPublic = null,Object? weeks = null,Object? sessionsPerWeek = null,Object? avgDurationMins = null,Object? difficulty = null,Object? equipment = null,Object? exercises = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? planId = freezed,Object? title = null,Object? description = null,Object? isPublic = null,Object? weeks = null,Object? sessionsPerWeek = null,Object? avgDurationMins = null,Object? difficulty = null,Object? equipment = null,Object? exercises = null,Object? isCopy = null,}) {
   return _then(_PlanEditorState(
 planId: freezed == planId ? _self.planId : planId // ignore: cast_nullable_to_non_nullable
 as String?,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -890,7 +892,8 @@ as int,avgDurationMins: null == avgDurationMins ? _self.avgDurationMins : avgDur
 as int,difficulty: null == difficulty ? _self.difficulty : difficulty // ignore: cast_nullable_to_non_nullable
 as String,equipment: null == equipment ? _self.equipment : equipment // ignore: cast_nullable_to_non_nullable
 as String,exercises: null == exercises ? _self._exercises : exercises // ignore: cast_nullable_to_non_nullable
-as List<PlanEditorExercise>,
+as List<PlanEditorExercise>,isCopy: null == isCopy ? _self.isCopy : isCopy // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

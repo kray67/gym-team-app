@@ -9,7 +9,7 @@ part of 'plan_active_notifier.dart';
 String _$activePlanHash() => r'1f42fc1fcca220ac05621860c5e5d77637fe7036';
 
 /// Fetches the current user's active plan (full detail with exercises + sets).
-/// Returns null when no active plan is set.
+/// The active plan is always a personal copy — returns null when none is set.
 ///
 /// Copied from [activePlan].
 @ProviderFor(activePlan)
@@ -186,7 +186,7 @@ class _UserPlan1rmProviderElement
 }
 
 String _$planActiveNotifierHash() =>
-    r'123b8ddbc43ab37207532a51f1ee8d8457ba683a';
+    r'6cd1c73fe2639add00dfce6e4735b274a9e77724';
 
 /// See also [PlanActiveNotifier].
 @ProviderFor(PlanActiveNotifier)

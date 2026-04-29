@@ -94,7 +94,7 @@ class _PlanSessionBuilderScreenState
     try {
       final planId = await notifier.savePlan();
       if (mounted) {
-        ref.invalidate(myPlansProvider);
+        ref.invalidate(allPlansProvider);
         ref.invalidate(planDetailProvider(planId));
         context.go('/plans/$planId');
       }

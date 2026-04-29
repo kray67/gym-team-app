@@ -460,6 +460,49 @@ ALTER TABLE plan_exercises
 
 ---
 
+## Phase 11 — Plans System Redesign ✅
+
+**Goal:** Copy-on-activation, unified plan list with filters, Favorites, GymTeam App user, Workout tab split.
+
+### SQL applied ✅
+```sql
+-- Copy-tracking + soft-delete on workout_plans
+ALTER TABLE workout_plans
+  ADD COLUMN IF NOT EXISTS source_plan_id uuid REFERENCES workout_plans(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS is_deleted boolean NOT NULL DEFAULT false;
+
+-- Official GymTeam App account marker
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS is_official boolean NOT NULL DEFAULT false;
+
+-- Rename saved_plans → plan_favorites
+ALTER TABLE saved_plans RENAME TO plan_favorites;
+
+-- RLS: update SELECT policy on workout_plans to cover copies + soft-deleted (owner-readable)
+--   Allow: (is_public = true AND source_plan_id IS NULL AND is_deleted = false) OR owner_id = auth.uid()
+
+-- GymTeam App official user (run in Supabase SQL editor):
+-- INSERT INTO auth.users (...) — see plan for full SQL
+-- UPDATE profiles SET username='gymteam', display_name='GymTeam App', is_official=true WHERE id='<uuid>';
+```
+
+### Done
+- [x] `WorkoutPlan` model: `sourcePlanId`, `isDeleted` added; `WorkoutPlanOwner.isOfficial` added; codegen run
+- [x] `PlanEditorState` model: `isCopy` flag added; codegen run
+- [x] `plan_active_notifier.dart` rewritten: `_getOrCreateCopy()` (restore archived copy or deep-copy source); `setActivePlan()` archives current copy then creates/restores copy; `clearActivePlan()` soft-deletes copy; `restartPlan()` upserts `restarted_at` only
+- [x] `plans_provider.dart` rewritten: `allPlansProvider` (public + own, non-copy, non-deleted); `userFavoritePlanIdsProvider`; `isPlanFavoritedProvider`; `gymTeamUserIdProvider`; removed `myPlansProvider`, `savedPlansProvider`, `publicPlansProvider`, `isPlanSavedProvider`
+- [x] `WorkoutScreen` (new): tabbed wrapper — "Workout" tab (active plan section + options menu: Update 1RM / Restart Plan / Archive Plan / Edit Next Session; next session card; Start Empty Workout button) + "History" tab (existing history list)
+- [x] `WorkoutHistoryScreen`: extracted `WorkoutHistoryList` widget (no Scaffold) for use as History tab
+- [x] `PlansListScreen` redesigned: single unified list (no tabs); compact filter panel (search + Sessions/wk + Difficulty + Equipment dropdowns + Favorites / GymTeam App / My Plans chips); `_PlanCard` active badge checks `activePlan?.sourcePlanId == plan.id`
+- [x] `PlanDetailScreen` updated: source vs copy detection (`isCopy`, `isActivePlan`, `progressPlanId`); edit warning dialog for source plans with copies; "Based on" row for copies; `_FavoriteButton` (plan_favorites) replaces `_SaveButton`; `_ActivePlanButton` → "Active · View Copy →" for active sources; inline activation prompt hidden for copies; `_SaveButton` / `_restartPlan` removed
+- [x] `plan_editor_provider.dart`: `startEdit()` sets `isCopy`; `savePlan()` forces `is_public=false` for copies; feed event only fires for new public source plans
+- [x] `plan_editor_screen.dart`: `isPublic` toggle hidden when `state.isCopy`
+- [x] Router: `/workout` → `WorkoutScreen` (was `WorkoutHistoryScreen`)
+- [x] `plan_session_builder_screen.dart`: `myPlansProvider` → `allPlansProvider`
+- [x] `discover_plans_screen.dart` deleted
+
+---
+
 ## Known Issues / Decisions
 - Project moved to `C:\Users\joao.dias\Desktop\flutter_projects\gym-team-app\gym_team` to avoid non-ASCII path (`João`) causing Gradle errors on Windows
 - `android/gradle.properties` has `android.overridePathCheck=true` — keep it in place

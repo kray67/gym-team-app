@@ -9,7 +9,7 @@ import 'package:gym_team/features/auth/screens/register_screen.dart';
 import 'package:gym_team/features/feed/screens/social_screen.dart';
 import 'package:gym_team/features/feed/screens/feed_workout_detail_screen.dart';
 import 'package:gym_team/features/feed/models/feed_item.dart';
-import 'package:gym_team/features/workout/screens/workout_history_screen.dart';
+import 'package:gym_team/features/workout/screens/workout_screen.dart';
 import 'package:gym_team/features/workout/screens/workout_detail_screen.dart';
 import 'package:gym_team/features/workout/screens/active_workout_screen.dart';
 import 'package:gym_team/features/workout/screens/exercise_picker_screen.dart';
@@ -128,7 +128,7 @@ GoRouter appRouter(AppRouterRef ref) {
           ),
           GoRoute(
             path: '/workout',
-            builder: (context, state) => const WorkoutHistoryScreen(),
+            builder: (context, state) => const WorkoutScreen(),
             routes: [
               GoRoute(
                 path: ':id',

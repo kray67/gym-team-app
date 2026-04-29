@@ -19,11 +19,13 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
   void startEdit(WorkoutPlan plan) {
     final sortedExercises = plan.exercises.toList()
       ..sort((a, b) => a.position.compareTo(b.position));
+    final isCopy = plan.sourcePlanId != null;
     state = PlanEditorState(
       planId: plan.id,
+      isCopy: isCopy,
       title: plan.title,
       description: plan.description ?? '',
-      isPublic: plan.isPublic,
+      isPublic: isCopy ? false : plan.isPublic,
       weeks: plan.weeks ?? 4,
       sessionsPerWeek: plan.sessionsPerWeek ?? 3,
       avgDurationMins: plan.avgDurationMins ?? 60,
@@ -463,7 +465,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
       'title': s.title.trim(),
       'description':
           s.description.trim().isEmpty ? null : s.description.trim(),
-      'is_public': s.isPublic,
+      'is_public': s.isCopy ? false : s.isPublic,
       'weeks': s.weeks,
       'sessions_per_week': s.sessionsPerWeek,
       'avg_duration_mins': s.avgDurationMins,
@@ -532,8 +534,8 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
       }
     }
 
-    // Write activity feed entry when publishing a new public plan
-    if (s.planId == null && s.isPublic) {
+    // Write activity feed entry when publishing a new public source plan
+    if (s.planId == null && s.isPublic && !s.isCopy) {
       await supabase.from('activity_feed').insert({
         'actor_id': userId,
         'type': 'plan_published',
