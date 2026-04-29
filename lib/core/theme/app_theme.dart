@@ -28,10 +28,14 @@ class AppTheme {
     // Keep accent/primary colors from the seed but pin all surface/background
     // colors to neutral dark values — prevents the yellow/orange "tint" effect
     // that Material 3 applies to every surface when a warm seed is used.
+    final noOverlay = WidgetStateProperty.all(Colors.transparent);
     return ThemeData(
       useMaterial3: true,
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
       colorScheme: scheme.copyWith(
         surfaceTint: Colors.transparent,
         surface: const Color(0xFF141218),
@@ -42,6 +46,39 @@ class AppTheme {
         surfaceContainerHighest: const Color(0xFF36343B),
         onSurface: const Color(0xFFE6E1E5),
         onSurfaceVariant: const Color(0xFFCAC4D0),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: ButtonStyle(
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: noOverlay,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: ButtonStyle(
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: noOverlay,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: ButtonStyle(
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: noOverlay,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ButtonStyle(
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: noOverlay,
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: ButtonStyle(
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: noOverlay,
+        ),
+      ),
+      listTileTheme: const ListTileThemeData(
+        selectedTileColor: Colors.transparent,
       ),
     );
   }
