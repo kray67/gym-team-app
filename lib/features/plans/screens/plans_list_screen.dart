@@ -89,6 +89,177 @@ class _PlansListScreenState extends ConsumerState<PlansListScreen> {
     }).toList();
   }
 
+  bool get _hasActiveFilters =>
+      _sessionsPerWeek != null ||
+      _difficulty != null ||
+      _equipment != null ||
+      _favoritesOnly ||
+      _gymTeamOnly ||
+      _myPlansOnly;
+
+  void _openFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: EdgeInsets.fromLTRB(
+              16, 16, 16, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text('Filters',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _sessionsPerWeek = null;
+                        _difficulty = null;
+                        _equipment = null;
+                        _favoritesOnly = false;
+                        _gymTeamOnly = false;
+                        _myPlansOnly = false;
+                      });
+                      setSheetState(() {});
+                    },
+                    child: const Text('Clear all'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Sessions / week
+              InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Sessions / week',
+                  isDense: true,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(),
+                ),
+                child: DropdownButton<int>(
+                  value: _sessionsPerWeek,
+                  hint: const Text('Any'),
+                  isExpanded: true,
+                  isDense: true,
+                  underline: const SizedBox(),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('Any')),
+                    for (var i = 1; i <= 7; i++)
+                      DropdownMenuItem(value: i, child: Text('$i / week')),
+                  ],
+                  onChanged: (v) {
+                    setState(() => _sessionsPerWeek = v);
+                    setSheetState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Difficulty
+              InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Difficulty',
+                  isDense: true,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(),
+                ),
+                child: DropdownButton<String>(
+                  value: _difficulty,
+                  hint: const Text('Any'),
+                  isExpanded: true,
+                  isDense: true,
+                  underline: const SizedBox(),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('Any')),
+                    ..._difficultyLabels.entries.map((e) =>
+                        DropdownMenuItem(value: e.key, child: Text(e.value))),
+                  ],
+                  onChanged: (v) {
+                    setState(() => _difficulty = v);
+                    setSheetState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Equipment
+              InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Equipment',
+                  isDense: true,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(),
+                ),
+                child: DropdownButton<String>(
+                  value: _equipment,
+                  hint: const Text('Any'),
+                  isExpanded: true,
+                  isDense: true,
+                  underline: const SizedBox(),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('Any')),
+                    ..._equipmentLabels.entries.map((e) =>
+                        DropdownMenuItem(value: e.key, child: Text(e.value))),
+                  ],
+                  onChanged: (v) {
+                    setState(() => _equipment = v);
+                    setSheetState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Filter chips
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  FilterChip(
+                    label: const Text('Favorites'),
+                    selected: _favoritesOnly,
+                    visualDensity: VisualDensity.compact,
+                    onSelected: (v) {
+                      _setFavoritesOnly(v);
+                      setSheetState(() {});
+                    },
+                  ),
+                  FilterChip(
+                    label: const Text('GymTeam App'),
+                    selected: _gymTeamOnly,
+                    visualDensity: VisualDensity.compact,
+                    onSelected: (v) {
+                      _setGymTeamOnly(v);
+                      setSheetState(() {});
+                    },
+                  ),
+                  FilterChip(
+                    label: const Text('My Plans'),
+                    selected: _myPlansOnly,
+                    visualDensity: VisualDensity.compact,
+                    onSelected: (v) {
+                      _setMyPlansOnly(v);
+                      setSheetState(() {});
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final allAsync = ref.watch(allPlansProvider);
@@ -97,37 +268,78 @@ class _PlansListScreenState extends ConsumerState<PlansListScreen> {
     final currentUserId = supabase.auth.currentUser!.id;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Plans'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'New Plan',
-            onPressed: () {
-              ref.read(planEditorNotifierProvider.notifier).startNew();
-              context.push('/plans/new');
-            },
-          ),
-        ],
+      appBar: AppBar(title: const Text('Plans')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          ref.read(planEditorNotifierProvider.notifier).startNew();
+          context.push('/plans/new');
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('New Plan'),
       ),
       body: Column(
         children: [
-          _FilterPanel(
-            searchController: _searchController,
-            sessionsPerWeek: _sessionsPerWeek,
-            difficulty: _difficulty,
-            equipment: _equipment,
-            favoritesOnly: _favoritesOnly,
-            gymTeamOnly: _gymTeamOnly,
-            myPlansOnly: _myPlansOnly,
-            onSearchChanged: (v) => setState(() => _searchQuery = v),
-            onSessionsPerWeekChanged: (v) =>
-                setState(() => _sessionsPerWeek = v),
-            onDifficultyChanged: (v) => setState(() => _difficulty = v),
-            onEquipmentChanged: (v) => setState(() => _equipment = v),
-            onFavoritesOnlyChanged: _setFavoritesOnly,
-            onGymTeamOnlyChanged: _setGymTeamOnly,
-            onMyPlansOnlyChanged: _setMyPlansOnly,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search plans…',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                              },
+                            )
+                          : null,
+                    ),
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.tune),
+                      tooltip: 'Filters',
+                      style: IconButton.styleFrom(
+                        side: BorderSide(
+                          color: _hasActiveFilters
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.white24,
+                        ),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () => _openFilterSheet(context),
+                    ),
+                    if (_hasActiveFilters)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
           const Divider(height: 1),
           Expanded(
@@ -153,7 +365,8 @@ class _PlansListScreenState extends ConsumerState<PlansListScreen> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.only(
+                      top: 8, bottom: 88),
                   itemCount: plans.length,
                   itemBuilder: (context, i) => _PlanCard(
                     plan: plans[i],
@@ -165,186 +378,6 @@ class _PlansListScreenState extends ConsumerState<PlansListScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ── Filter panel ──────────────────────────────────────────────────────────────
-
-class _FilterPanel extends StatelessWidget {
-  final TextEditingController searchController;
-  final int? sessionsPerWeek;
-  final String? difficulty;
-  final String? equipment;
-  final bool favoritesOnly;
-  final bool gymTeamOnly;
-  final bool myPlansOnly;
-  final ValueChanged<String> onSearchChanged;
-  final ValueChanged<int?> onSessionsPerWeekChanged;
-  final ValueChanged<String?> onDifficultyChanged;
-  final ValueChanged<String?> onEquipmentChanged;
-  final ValueChanged<bool> onFavoritesOnlyChanged;
-  final ValueChanged<bool> onGymTeamOnlyChanged;
-  final ValueChanged<bool> onMyPlansOnlyChanged;
-
-  const _FilterPanel({
-    required this.searchController,
-    required this.sessionsPerWeek,
-    required this.difficulty,
-    required this.equipment,
-    required this.favoritesOnly,
-    required this.gymTeamOnly,
-    required this.myPlansOnly,
-    required this.onSearchChanged,
-    required this.onSessionsPerWeekChanged,
-    required this.onDifficultyChanged,
-    required this.onEquipmentChanged,
-    required this.onFavoritesOnlyChanged,
-    required this.onGymTeamOnlyChanged,
-    required this.onMyPlansOnlyChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Search
-          TextField(
-            controller: searchController,
-            decoration: InputDecoration(
-              hintText: 'Search plans…',
-              prefixIcon: const Icon(Icons.search, size: 20),
-              isDense: true,
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8)),
-              suffixIcon: searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
-                      onPressed: () {
-                        searchController.clear();
-                        onSearchChanged('');
-                      },
-                    )
-                  : null,
-            ),
-            onChanged: onSearchChanged,
-          ),
-          const SizedBox(height: 8),
-
-          // Dropdowns row
-          Row(
-            children: [
-              Expanded(
-                child: _CompactDropdown<int>(
-                  hint: 'Sessions/wk',
-                  value: sessionsPerWeek,
-                  items: [
-                    for (var i = 1; i <= 7; i++)
-                      DropdownMenuItem(value: i, child: Text('$i/wk')),
-                  ],
-                  onChanged: onSessionsPerWeekChanged,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CompactDropdown<String>(
-                  hint: 'Difficulty',
-                  value: difficulty,
-                  items: _difficultyLabels.entries
-                      .map((e) => DropdownMenuItem(
-                          value: e.key, child: Text(e.value)))
-                      .toList(),
-                  onChanged: onDifficultyChanged,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CompactDropdown<String>(
-                  hint: 'Equipment',
-                  value: equipment,
-                  items: _equipmentLabels.entries
-                      .map((e) => DropdownMenuItem(
-                          value: e.key, child: Text(e.value)))
-                      .toList(),
-                  onChanged: onEquipmentChanged,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-
-          // Chip row: Favorites + GymTeam (independent) | My Plans (exclusive)
-          Wrap(
-            spacing: 6,
-            children: [
-              FilterChip(
-                label: const Text('Favorites'),
-                selected: favoritesOnly,
-                onSelected: onFavoritesOnlyChanged,
-              ),
-              FilterChip(
-                label: const Text('GymTeam App'),
-                selected: gymTeamOnly,
-                onSelected: onGymTeamOnlyChanged,
-              ),
-              FilterChip(
-                label: const Text('My Plans'),
-                selected: myPlansOnly,
-                onSelected: onMyPlansOnlyChanged,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CompactDropdown<T> extends StatelessWidget {
-  final String hint;
-  final T? value;
-  final List<DropdownMenuItem<T>> items;
-  final ValueChanged<T?> onChanged;
-
-  const _CompactDropdown({
-    required this.hint,
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InputDecorator(
-      decoration: InputDecoration(
-        isDense: true,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      child: DropdownButton<T>(
-        value: value,
-        hint: Text(hint,
-            style: const TextStyle(fontSize: 12, color: Colors.white54)),
-        isDense: true,
-        isExpanded: true,
-        underline: const SizedBox(),
-        items: [
-          DropdownMenuItem<T>(
-            value: null,
-            child: Text('Any',
-                style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.primary)),
-          ),
-          ...items,
-        ],
-        onChanged: onChanged,
-        style: const TextStyle(fontSize: 12, color: Colors.white),
       ),
     );
   }

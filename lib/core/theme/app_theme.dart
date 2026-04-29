@@ -30,6 +30,8 @@ class AppTheme {
     // that Material 3 applies to every surface when a warm seed is used.
     return ThemeData(
       useMaterial3: true,
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: Colors.transparent,
       colorScheme: scheme.copyWith(
         surfaceTint: Colors.transparent,
         surface: const Color(0xFF141218),

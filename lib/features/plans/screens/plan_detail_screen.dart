@@ -411,7 +411,10 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                         ref
                             .read(planEditorNotifierProvider.notifier)
                             .startEdit(plan);
-                        if (context.mounted) context.push('/plans/new');
+                        if (context.mounted) {
+                          context.push(
+                              isCopy ? '/plans/sessions-builder' : '/plans/new');
+                        }
                       },
                     ),
                 ],
