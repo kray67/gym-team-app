@@ -290,7 +290,7 @@ as bool,
 /// @nodoc
 mixin _$WorkoutPlan {
 
- String get id; String get title; String? get description;@JsonKey(name: 'is_public') bool get isPublic;@JsonKey(name: 'owner_id') String? get ownerId; int? get weeks;@JsonKey(name: 'sessions_per_week') int? get sessionsPerWeek;@JsonKey(name: 'avg_duration_mins') int? get avgDurationMins; String? get difficulty; String? get equipment;@JsonKey(name: 'plan_exercises') List<PlanExercise> get exercises;@JsonKey(name: 'profiles') WorkoutPlanOwner? get owner;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;@JsonKey(name: 'source_plan_id') String? get sourcePlanId;@JsonKey(name: 'is_deleted') bool get isDeleted;
+ String get id; String get title; String? get description;@JsonKey(name: 'is_public') bool get isPublic;@JsonKey(name: 'owner_id') String? get ownerId; int? get weeks;@JsonKey(name: 'sessions_per_week') int? get sessionsPerWeek;@JsonKey(name: 'avg_duration_mins') int? get avgDurationMins; String? get difficulty; String? get equipment;@JsonKey(name: 'focus') List<String> get focus;@JsonKey(name: 'plan_exercises') List<PlanExercise> get exercises;@JsonKey(name: 'profiles') WorkoutPlanOwner? get owner;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;@JsonKey(name: 'source_plan_id') String? get sourcePlanId;@JsonKey(name: 'is_deleted') bool get isDeleted;
 /// Create a copy of WorkoutPlan
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -303,16 +303,16 @@ $WorkoutPlanCopyWith<WorkoutPlan> get copyWith => _$WorkoutPlanCopyWithImpl<Work
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutPlan&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.weeks, weeks) || other.weeks == weeks)&&(identical(other.sessionsPerWeek, sessionsPerWeek) || other.sessionsPerWeek == sessionsPerWeek)&&(identical(other.avgDurationMins, avgDurationMins) || other.avgDurationMins == avgDurationMins)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&const DeepCollectionEquality().equals(other.exercises, exercises)&&(identical(other.owner, owner) || other.owner == owner)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.sourcePlanId, sourcePlanId) || other.sourcePlanId == sourcePlanId)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutPlan&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.weeks, weeks) || other.weeks == weeks)&&(identical(other.sessionsPerWeek, sessionsPerWeek) || other.sessionsPerWeek == sessionsPerWeek)&&(identical(other.avgDurationMins, avgDurationMins) || other.avgDurationMins == avgDurationMins)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&const DeepCollectionEquality().equals(other.focus, focus)&&const DeepCollectionEquality().equals(other.exercises, exercises)&&(identical(other.owner, owner) || other.owner == owner)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.sourcePlanId, sourcePlanId) || other.sourcePlanId == sourcePlanId)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,isPublic,ownerId,weeks,sessionsPerWeek,avgDurationMins,difficulty,equipment,const DeepCollectionEquality().hash(exercises),owner,createdAt,updatedAt,sourcePlanId,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,title,description,isPublic,ownerId,weeks,sessionsPerWeek,avgDurationMins,difficulty,equipment,const DeepCollectionEquality().hash(focus),const DeepCollectionEquality().hash(exercises),owner,createdAt,updatedAt,sourcePlanId,isDeleted);
 
 @override
 String toString() {
-  return 'WorkoutPlan(id: $id, title: $title, description: $description, isPublic: $isPublic, ownerId: $ownerId, weeks: $weeks, sessionsPerWeek: $sessionsPerWeek, avgDurationMins: $avgDurationMins, difficulty: $difficulty, equipment: $equipment, exercises: $exercises, owner: $owner, createdAt: $createdAt, updatedAt: $updatedAt, sourcePlanId: $sourcePlanId, isDeleted: $isDeleted)';
+  return 'WorkoutPlan(id: $id, title: $title, description: $description, isPublic: $isPublic, ownerId: $ownerId, weeks: $weeks, sessionsPerWeek: $sessionsPerWeek, avgDurationMins: $avgDurationMins, difficulty: $difficulty, equipment: $equipment, focus: $focus, exercises: $exercises, owner: $owner, createdAt: $createdAt, updatedAt: $updatedAt, sourcePlanId: $sourcePlanId, isDeleted: $isDeleted)';
 }
 
 
@@ -323,7 +323,7 @@ abstract mixin class $WorkoutPlanCopyWith<$Res>  {
   factory $WorkoutPlanCopyWith(WorkoutPlan value, $Res Function(WorkoutPlan) _then) = _$WorkoutPlanCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String? description,@JsonKey(name: 'is_public') bool isPublic,@JsonKey(name: 'owner_id') String? ownerId, int? weeks,@JsonKey(name: 'sessions_per_week') int? sessionsPerWeek,@JsonKey(name: 'avg_duration_mins') int? avgDurationMins, String? difficulty, String? equipment,@JsonKey(name: 'plan_exercises') List<PlanExercise> exercises,@JsonKey(name: 'profiles') WorkoutPlanOwner? owner,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt,@JsonKey(name: 'source_plan_id') String? sourcePlanId,@JsonKey(name: 'is_deleted') bool isDeleted
+ String id, String title, String? description,@JsonKey(name: 'is_public') bool isPublic,@JsonKey(name: 'owner_id') String? ownerId, int? weeks,@JsonKey(name: 'sessions_per_week') int? sessionsPerWeek,@JsonKey(name: 'avg_duration_mins') int? avgDurationMins, String? difficulty, String? equipment,@JsonKey(name: 'focus') List<String> focus,@JsonKey(name: 'plan_exercises') List<PlanExercise> exercises,@JsonKey(name: 'profiles') WorkoutPlanOwner? owner,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt,@JsonKey(name: 'source_plan_id') String? sourcePlanId,@JsonKey(name: 'is_deleted') bool isDeleted
 });
 
 
@@ -340,7 +340,7 @@ class _$WorkoutPlanCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutPlan
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = freezed,Object? isPublic = null,Object? ownerId = freezed,Object? weeks = freezed,Object? sessionsPerWeek = freezed,Object? avgDurationMins = freezed,Object? difficulty = freezed,Object? equipment = freezed,Object? exercises = null,Object? owner = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? sourcePlanId = freezed,Object? isDeleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = freezed,Object? isPublic = null,Object? ownerId = freezed,Object? weeks = freezed,Object? sessionsPerWeek = freezed,Object? avgDurationMins = freezed,Object? difficulty = freezed,Object? equipment = freezed,Object? focus = null,Object? exercises = null,Object? owner = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? sourcePlanId = freezed,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -352,7 +352,8 @@ as int?,sessionsPerWeek: freezed == sessionsPerWeek ? _self.sessionsPerWeek : se
 as int?,avgDurationMins: freezed == avgDurationMins ? _self.avgDurationMins : avgDurationMins // ignore: cast_nullable_to_non_nullable
 as int?,difficulty: freezed == difficulty ? _self.difficulty : difficulty // ignore: cast_nullable_to_non_nullable
 as String?,equipment: freezed == equipment ? _self.equipment : equipment // ignore: cast_nullable_to_non_nullable
-as String?,exercises: null == exercises ? _self.exercises : exercises // ignore: cast_nullable_to_non_nullable
+as String?,focus: null == focus ? _self.focus : focus // ignore: cast_nullable_to_non_nullable
+as List<String>,exercises: null == exercises ? _self.exercises : exercises // ignore: cast_nullable_to_non_nullable
 as List<PlanExercise>,owner: freezed == owner ? _self.owner : owner // ignore: cast_nullable_to_non_nullable
 as WorkoutPlanOwner?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -455,10 +456,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String? description, @JsonKey(name: 'is_public')  bool isPublic, @JsonKey(name: 'owner_id')  String? ownerId,  int? weeks, @JsonKey(name: 'sessions_per_week')  int? sessionsPerWeek, @JsonKey(name: 'avg_duration_mins')  int? avgDurationMins,  String? difficulty,  String? equipment, @JsonKey(name: 'plan_exercises')  List<PlanExercise> exercises, @JsonKey(name: 'profiles')  WorkoutPlanOwner? owner, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'source_plan_id')  String? sourcePlanId, @JsonKey(name: 'is_deleted')  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String? description, @JsonKey(name: 'is_public')  bool isPublic, @JsonKey(name: 'owner_id')  String? ownerId,  int? weeks, @JsonKey(name: 'sessions_per_week')  int? sessionsPerWeek, @JsonKey(name: 'avg_duration_mins')  int? avgDurationMins,  String? difficulty,  String? equipment, @JsonKey(name: 'focus')  List<String> focus, @JsonKey(name: 'plan_exercises')  List<PlanExercise> exercises, @JsonKey(name: 'profiles')  WorkoutPlanOwner? owner, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'source_plan_id')  String? sourcePlanId, @JsonKey(name: 'is_deleted')  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WorkoutPlan() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.ownerId,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises,_that.owner,_that.createdAt,_that.updatedAt,_that.sourcePlanId,_that.isDeleted);case _:
+return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.ownerId,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.focus,_that.exercises,_that.owner,_that.createdAt,_that.updatedAt,_that.sourcePlanId,_that.isDeleted);case _:
   return orElse();
 
 }
@@ -476,10 +477,10 @@ return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.owne
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String? description, @JsonKey(name: 'is_public')  bool isPublic, @JsonKey(name: 'owner_id')  String? ownerId,  int? weeks, @JsonKey(name: 'sessions_per_week')  int? sessionsPerWeek, @JsonKey(name: 'avg_duration_mins')  int? avgDurationMins,  String? difficulty,  String? equipment, @JsonKey(name: 'plan_exercises')  List<PlanExercise> exercises, @JsonKey(name: 'profiles')  WorkoutPlanOwner? owner, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'source_plan_id')  String? sourcePlanId, @JsonKey(name: 'is_deleted')  bool isDeleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String? description, @JsonKey(name: 'is_public')  bool isPublic, @JsonKey(name: 'owner_id')  String? ownerId,  int? weeks, @JsonKey(name: 'sessions_per_week')  int? sessionsPerWeek, @JsonKey(name: 'avg_duration_mins')  int? avgDurationMins,  String? difficulty,  String? equipment, @JsonKey(name: 'focus')  List<String> focus, @JsonKey(name: 'plan_exercises')  List<PlanExercise> exercises, @JsonKey(name: 'profiles')  WorkoutPlanOwner? owner, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'source_plan_id')  String? sourcePlanId, @JsonKey(name: 'is_deleted')  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutPlan():
-return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.ownerId,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises,_that.owner,_that.createdAt,_that.updatedAt,_that.sourcePlanId,_that.isDeleted);case _:
+return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.ownerId,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.focus,_that.exercises,_that.owner,_that.createdAt,_that.updatedAt,_that.sourcePlanId,_that.isDeleted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -496,10 +497,10 @@ return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.owne
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String? description, @JsonKey(name: 'is_public')  bool isPublic, @JsonKey(name: 'owner_id')  String? ownerId,  int? weeks, @JsonKey(name: 'sessions_per_week')  int? sessionsPerWeek, @JsonKey(name: 'avg_duration_mins')  int? avgDurationMins,  String? difficulty,  String? equipment, @JsonKey(name: 'plan_exercises')  List<PlanExercise> exercises, @JsonKey(name: 'profiles')  WorkoutPlanOwner? owner, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'source_plan_id')  String? sourcePlanId, @JsonKey(name: 'is_deleted')  bool isDeleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String? description, @JsonKey(name: 'is_public')  bool isPublic, @JsonKey(name: 'owner_id')  String? ownerId,  int? weeks, @JsonKey(name: 'sessions_per_week')  int? sessionsPerWeek, @JsonKey(name: 'avg_duration_mins')  int? avgDurationMins,  String? difficulty,  String? equipment, @JsonKey(name: 'focus')  List<String> focus, @JsonKey(name: 'plan_exercises')  List<PlanExercise> exercises, @JsonKey(name: 'profiles')  WorkoutPlanOwner? owner, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'source_plan_id')  String? sourcePlanId, @JsonKey(name: 'is_deleted')  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutPlan() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.ownerId,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.exercises,_that.owner,_that.createdAt,_that.updatedAt,_that.sourcePlanId,_that.isDeleted);case _:
+return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.ownerId,_that.weeks,_that.sessionsPerWeek,_that.avgDurationMins,_that.difficulty,_that.equipment,_that.focus,_that.exercises,_that.owner,_that.createdAt,_that.updatedAt,_that.sourcePlanId,_that.isDeleted);case _:
   return null;
 
 }
@@ -511,7 +512,7 @@ return $default(_that.id,_that.title,_that.description,_that.isPublic,_that.owne
 @JsonSerializable()
 
 class _WorkoutPlan implements WorkoutPlan {
-  const _WorkoutPlan({required this.id, required this.title, this.description, @JsonKey(name: 'is_public') this.isPublic = false, @JsonKey(name: 'owner_id') this.ownerId, this.weeks, @JsonKey(name: 'sessions_per_week') this.sessionsPerWeek, @JsonKey(name: 'avg_duration_mins') this.avgDurationMins, this.difficulty, this.equipment, @JsonKey(name: 'plan_exercises') final  List<PlanExercise> exercises = const [], @JsonKey(name: 'profiles') this.owner, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt, @JsonKey(name: 'source_plan_id') this.sourcePlanId, @JsonKey(name: 'is_deleted') this.isDeleted = false}): _exercises = exercises;
+  const _WorkoutPlan({required this.id, required this.title, this.description, @JsonKey(name: 'is_public') this.isPublic = false, @JsonKey(name: 'owner_id') this.ownerId, this.weeks, @JsonKey(name: 'sessions_per_week') this.sessionsPerWeek, @JsonKey(name: 'avg_duration_mins') this.avgDurationMins, this.difficulty, this.equipment, @JsonKey(name: 'focus') final  List<String> focus = const [], @JsonKey(name: 'plan_exercises') final  List<PlanExercise> exercises = const [], @JsonKey(name: 'profiles') this.owner, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt, @JsonKey(name: 'source_plan_id') this.sourcePlanId, @JsonKey(name: 'is_deleted') this.isDeleted = false}): _focus = focus,_exercises = exercises;
   factory _WorkoutPlan.fromJson(Map<String, dynamic> json) => _$WorkoutPlanFromJson(json);
 
 @override final  String id;
@@ -524,6 +525,13 @@ class _WorkoutPlan implements WorkoutPlan {
 @override@JsonKey(name: 'avg_duration_mins') final  int? avgDurationMins;
 @override final  String? difficulty;
 @override final  String? equipment;
+ final  List<String> _focus;
+@override@JsonKey(name: 'focus') List<String> get focus {
+  if (_focus is EqualUnmodifiableListView) return _focus;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_focus);
+}
+
  final  List<PlanExercise> _exercises;
 @override@JsonKey(name: 'plan_exercises') List<PlanExercise> get exercises {
   if (_exercises is EqualUnmodifiableListView) return _exercises;
@@ -550,16 +558,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutPlan&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.weeks, weeks) || other.weeks == weeks)&&(identical(other.sessionsPerWeek, sessionsPerWeek) || other.sessionsPerWeek == sessionsPerWeek)&&(identical(other.avgDurationMins, avgDurationMins) || other.avgDurationMins == avgDurationMins)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&const DeepCollectionEquality().equals(other._exercises, _exercises)&&(identical(other.owner, owner) || other.owner == owner)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.sourcePlanId, sourcePlanId) || other.sourcePlanId == sourcePlanId)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutPlan&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.weeks, weeks) || other.weeks == weeks)&&(identical(other.sessionsPerWeek, sessionsPerWeek) || other.sessionsPerWeek == sessionsPerWeek)&&(identical(other.avgDurationMins, avgDurationMins) || other.avgDurationMins == avgDurationMins)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&const DeepCollectionEquality().equals(other._focus, _focus)&&const DeepCollectionEquality().equals(other._exercises, _exercises)&&(identical(other.owner, owner) || other.owner == owner)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.sourcePlanId, sourcePlanId) || other.sourcePlanId == sourcePlanId)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,isPublic,ownerId,weeks,sessionsPerWeek,avgDurationMins,difficulty,equipment,const DeepCollectionEquality().hash(_exercises),owner,createdAt,updatedAt,sourcePlanId,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,title,description,isPublic,ownerId,weeks,sessionsPerWeek,avgDurationMins,difficulty,equipment,const DeepCollectionEquality().hash(_focus),const DeepCollectionEquality().hash(_exercises),owner,createdAt,updatedAt,sourcePlanId,isDeleted);
 
 @override
 String toString() {
-  return 'WorkoutPlan(id: $id, title: $title, description: $description, isPublic: $isPublic, ownerId: $ownerId, weeks: $weeks, sessionsPerWeek: $sessionsPerWeek, avgDurationMins: $avgDurationMins, difficulty: $difficulty, equipment: $equipment, exercises: $exercises, owner: $owner, createdAt: $createdAt, updatedAt: $updatedAt, sourcePlanId: $sourcePlanId, isDeleted: $isDeleted)';
+  return 'WorkoutPlan(id: $id, title: $title, description: $description, isPublic: $isPublic, ownerId: $ownerId, weeks: $weeks, sessionsPerWeek: $sessionsPerWeek, avgDurationMins: $avgDurationMins, difficulty: $difficulty, equipment: $equipment, focus: $focus, exercises: $exercises, owner: $owner, createdAt: $createdAt, updatedAt: $updatedAt, sourcePlanId: $sourcePlanId, isDeleted: $isDeleted)';
 }
 
 
@@ -570,7 +578,7 @@ abstract mixin class _$WorkoutPlanCopyWith<$Res> implements $WorkoutPlanCopyWith
   factory _$WorkoutPlanCopyWith(_WorkoutPlan value, $Res Function(_WorkoutPlan) _then) = __$WorkoutPlanCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String? description,@JsonKey(name: 'is_public') bool isPublic,@JsonKey(name: 'owner_id') String? ownerId, int? weeks,@JsonKey(name: 'sessions_per_week') int? sessionsPerWeek,@JsonKey(name: 'avg_duration_mins') int? avgDurationMins, String? difficulty, String? equipment,@JsonKey(name: 'plan_exercises') List<PlanExercise> exercises,@JsonKey(name: 'profiles') WorkoutPlanOwner? owner,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt,@JsonKey(name: 'source_plan_id') String? sourcePlanId,@JsonKey(name: 'is_deleted') bool isDeleted
+ String id, String title, String? description,@JsonKey(name: 'is_public') bool isPublic,@JsonKey(name: 'owner_id') String? ownerId, int? weeks,@JsonKey(name: 'sessions_per_week') int? sessionsPerWeek,@JsonKey(name: 'avg_duration_mins') int? avgDurationMins, String? difficulty, String? equipment,@JsonKey(name: 'focus') List<String> focus,@JsonKey(name: 'plan_exercises') List<PlanExercise> exercises,@JsonKey(name: 'profiles') WorkoutPlanOwner? owner,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt,@JsonKey(name: 'source_plan_id') String? sourcePlanId,@JsonKey(name: 'is_deleted') bool isDeleted
 });
 
 
@@ -587,7 +595,7 @@ class __$WorkoutPlanCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutPlan
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = freezed,Object? isPublic = null,Object? ownerId = freezed,Object? weeks = freezed,Object? sessionsPerWeek = freezed,Object? avgDurationMins = freezed,Object? difficulty = freezed,Object? equipment = freezed,Object? exercises = null,Object? owner = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? sourcePlanId = freezed,Object? isDeleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = freezed,Object? isPublic = null,Object? ownerId = freezed,Object? weeks = freezed,Object? sessionsPerWeek = freezed,Object? avgDurationMins = freezed,Object? difficulty = freezed,Object? equipment = freezed,Object? focus = null,Object? exercises = null,Object? owner = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? sourcePlanId = freezed,Object? isDeleted = null,}) {
   return _then(_WorkoutPlan(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -599,7 +607,8 @@ as int?,sessionsPerWeek: freezed == sessionsPerWeek ? _self.sessionsPerWeek : se
 as int?,avgDurationMins: freezed == avgDurationMins ? _self.avgDurationMins : avgDurationMins // ignore: cast_nullable_to_non_nullable
 as int?,difficulty: freezed == difficulty ? _self.difficulty : difficulty // ignore: cast_nullable_to_non_nullable
 as String?,equipment: freezed == equipment ? _self.equipment : equipment // ignore: cast_nullable_to_non_nullable
-as String?,exercises: null == exercises ? _self._exercises : exercises // ignore: cast_nullable_to_non_nullable
+as String?,focus: null == focus ? _self._focus : focus // ignore: cast_nullable_to_non_nullable
+as List<String>,exercises: null == exercises ? _self._exercises : exercises // ignore: cast_nullable_to_non_nullable
 as List<PlanExercise>,owner: freezed == owner ? _self.owner : owner // ignore: cast_nullable_to_non_nullable
 as WorkoutPlanOwner?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable

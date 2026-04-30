@@ -35,6 +35,9 @@ _WorkoutPlan _$WorkoutPlanFromJson(Map<String, dynamic> json) => _WorkoutPlan(
   avgDurationMins: (json['avg_duration_mins'] as num?)?.toInt(),
   difficulty: json['difficulty'] as String?,
   equipment: json['equipment'] as String?,
+  focus:
+      (json['focus'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
   exercises:
       (json['plan_exercises'] as List<dynamic>?)
           ?.map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
@@ -65,6 +68,7 @@ Map<String, dynamic> _$WorkoutPlanToJson(_WorkoutPlan instance) =>
       'avg_duration_mins': instance.avgDurationMins,
       'difficulty': instance.difficulty,
       'equipment': instance.equipment,
+      'focus': instance.focus,
       'plan_exercises': instance.exercises,
       'profiles': instance.owner,
       'created_at': instance.createdAt?.toIso8601String(),

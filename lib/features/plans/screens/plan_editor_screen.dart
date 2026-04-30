@@ -3,6 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_team/features/plans/providers/plan_editor_provider.dart';
 
+const _focusOptions = [
+  'Strength',
+  'Bodybuilding',
+  'Fitness',
+  'Cardio',
+  'Athletics',
+  'Olympic Weightlifting',
+];
+
 const _difficultyOptions = ['novice', 'intermediate', 'advanced'];
 const _difficultyLabels = ['Novice', 'Intermediate', 'Advanced'];
 const _equipmentOptions = [
@@ -185,6 +194,39 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
                       .setAvgDurationMins(parsed);
                 }
               },
+            ),
+            const SizedBox(height: 16),
+            InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Plan Focus',
+                isDense: true,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                border: OutlineInputBorder(),
+              ),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: _focusOptions.map((option) {
+                  final selected = s.focus.contains(option);
+                  return FilterChip(
+                    label: Text(option),
+                    selected: selected,
+                    visualDensity: VisualDensity.compact,
+                    onSelected: (v) {
+                      final updated = List<String>.from(s.focus);
+                      if (v) {
+                        updated.add(option);
+                      } else {
+                        updated.remove(option);
+                      }
+                      ref
+                          .read(planEditorNotifierProvider.notifier)
+                          .setFocus(updated);
+                    },
+                  );
+                }).toList(),
+              ),
             ),
             const SizedBox(height: 16),
             InputDecorator(

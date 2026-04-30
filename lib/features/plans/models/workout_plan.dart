@@ -31,6 +31,7 @@ abstract class WorkoutPlan with _$WorkoutPlan {
     @JsonKey(name: 'avg_duration_mins') int? avgDurationMins,
     String? difficulty,
     String? equipment,
+    @JsonKey(name: 'focus') @Default([]) List<String> focus,
     @JsonKey(name: 'plan_exercises') @Default([]) List<PlanExercise> exercises,
     @JsonKey(name: 'profiles') WorkoutPlanOwner? owner,
     @JsonKey(name: 'created_at') DateTime? createdAt,

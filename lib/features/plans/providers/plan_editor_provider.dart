@@ -31,6 +31,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
       avgDurationMins: plan.avgDurationMins ?? 60,
       difficulty: plan.difficulty ?? 'intermediate',
       equipment: plan.equipment ?? 'commercial_gym',
+      focus: plan.focus,
       exercises: sortedExercises
           .map((pe) {
             final sortedSets = pe.sets.toList()
@@ -72,6 +73,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
   void setAvgDurationMins(int v) => state = state?.copyWith(avgDurationMins: v);
   void setDifficulty(String v) => state = state?.copyWith(difficulty: v);
   void setEquipment(String v) => state = state?.copyWith(equipment: v);
+  void setFocus(List<String> v) => state = state?.copyWith(focus: v);
 
   // ── Session-level operations ──────────────────────────────────────────────
 
@@ -471,6 +473,7 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
       'avg_duration_mins': s.avgDurationMins,
       'difficulty': s.difficulty,
       'equipment': s.equipment,
+      'focus': s.focus,
     };
 
     if (s.planId == null) {
