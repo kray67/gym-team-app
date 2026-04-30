@@ -53,7 +53,7 @@ lib/
 profiles             -- extends auth.users: username, display_name, bio, avatar_url, avatar_id (int), avatar_color (text), active_plan_id (uuid → workout_plans), is_official (bool default false — GymTeam App account), theme_color (text)
 follows              -- (follower_id, following_id) composite PK
 exercises            -- catalog: name, category, muscle_group, is_custom, created_by, tracking_type (text, default 'weight_reps')
-workout_plans        -- title, description, is_public, owner_id, source_plan_id (uuid self-ref ON DELETE SET NULL — non-null = personal copy), is_deleted (bool — soft-delete for copies; history still joins the row)
+workout_plans        -- title, description, is_public, owner_id, source_plan_id (uuid self-ref ON DELETE SET NULL — non-null = personal copy), is_deleted (bool — soft-delete for copies; history still joins the row), focus (text[] NOT NULL DEFAULT '{}' — multi-select plan focus: Strength/Bodybuilding/Fitness/Cardio/Athletics/Olympic Weightlifting)
 plan_exercises       -- plan_id, exercise_id, position, goal_type, weight_type, week_number, session_number, superset_group_id, note
 plan_exercise_sets   -- plan_exercise_id, set_number, target_reps, target_reps_max, target_weight (% 1RM), target_rpe, target_rpe_max, is_warmup, weight_increment, target_duration_secs
 plan_favorites       -- (user_id, plan_id) — renamed from saved_plans; references source plans only (never copies)
@@ -192,6 +192,11 @@ flutter build apk --release --target-platform android-arm64 --dart-define=SUPABA
 - **Set options 3-dot button**: `_SetMenuCell` widget renders dots icon + set number side by side within `_kSetW = 44.0`; dots `GestureDetector` calls `_showSetMenu()` on `_SetRowState` (shared logic for plan and free mode); set number is plain text
 - **`ReorderableListView.buildDefaultDragHandles: false`**: must be set on ALL `ReorderableListView` instances (outer slot list + inner superset list in both `ActiveWorkoutScreen` and `PlanSessionBuilderScreen`); without it, Flutter/web adds a second drag handle alongside custom `ReorderableDragStartListener` handles
 - **Reactive dropdowns**: use `InputDecorator(decoration: InputDecoration(labelText:...), child: DropdownButton(value:..., underline: SizedBox(), isExpanded: true, isDense: true, ...))` instead of `DropdownButtonFormField` when the value must reflect live provider state — `DropdownButtonFormField.value` is deprecated as of Flutter 3.33; `initialValue` only applies on first render and won't update when the parent rebuilds
+- **FilterChip checkmarks**: `ChipThemeData(showCheckmark: false)` is set globally in `AppTheme.darkWithSeed()` — never add `showCheckmark: false` per-widget; the theme covers all chips
+- **Web tap flicker**: suppressed via `splashFactory: NoSplash.splashFactory`, `splashColor/focusColor/hoverColor: transparent`, per-button-theme `overlayColor: transparent`, and `-webkit-tap-highlight-color: transparent` CSS in `web/index.html`
+- **Batch Supabase inserts**: when saving many rows (e.g. plan exercises + sets), build `List<Map>` and call `.insert(list)` once per table — never loop with individual awaited inserts; use client-side UUIDs (`_uuid.v4()`) as the `id` field so child rows can reference parent IDs without waiting for DB responses
+- **`delete_account` RPC**: must explicitly delete from all tables with direct FKs to `auth.users` (`activity_feed`, `feed_comments`, `follows`, `exercise_records`, `user_plan_progress`, `user_plan_1rm`, `plan_favorites`, `workout_plans`) before deleting the `auth.users` row; cascades from `profiles` handle the rest
+- **Password visibility toggle**: login + register screens use `_obscurePassword` bool state + `suffixIcon: IconButton(Icons.visibility / Icons.visibility_off)` on the password `TextField`
 
 ## Superset & Warm-up Architecture
 

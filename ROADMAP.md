@@ -503,6 +503,43 @@ ALTER TABLE saved_plans RENAME TO plan_favorites;
 
 ---
 
+## Post-Phase 11 Improvements ✅
+
+### SQL applied ✅
+```sql
+-- Plan Focus categories (multi-select text array)
+ALTER TABLE workout_plans
+  ADD COLUMN IF NOT EXISTS focus text[] NOT NULL DEFAULT '{}';
+
+-- delete_account RPC updated to handle FK constraints before deleting auth user
+CREATE OR REPLACE FUNCTION delete_account()
+RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  DELETE FROM activity_feed WHERE actor_id = auth.uid() OR target_id = auth.uid();
+  DELETE FROM feed_comments WHERE user_id = auth.uid();
+  DELETE FROM follows WHERE follower_id = auth.uid() OR following_id = auth.uid();
+  DELETE FROM exercise_records WHERE user_id = auth.uid();
+  DELETE FROM user_plan_progress WHERE user_id = auth.uid();
+  DELETE FROM user_plan_1rm WHERE user_id = auth.uid();
+  DELETE FROM plan_favorites WHERE user_id = auth.uid();
+  DELETE FROM workout_plans WHERE owner_id = auth.uid();
+  DELETE FROM auth.users WHERE id = auth.uid();
+$$;
+```
+
+### Done
+- [x] **Blue web flicker fix** — `AppTheme.darkWithSeed()` now sets `splashColor`, `focusColor`, `hoverColor: transparent`; overrides `overlayColor: transparent` + `splashFactory: NoSplash` on all button themes (Filled, Outlined, Text, Elevated, Icon); `web/index.html` adds `* { -webkit-tap-highlight-color: transparent; outline: none; }`
+- [x] **FilterChip checkmark removed globally** — `ChipThemeData(showCheckmark: false)` in `AppTheme`; applies to all chips in the app without per-widget changes
+- [x] **Plan Focus field** — `WorkoutPlan.focus` (`List<String>`) + `PlanEditorState.focus` added; codegen run; `PlanEditorNotifier.setFocus()` + persisted in `savePlan()`; plan editor shows 6 `FilterChip`s (Strength / Bodybuilding / Fitness / Cardio / Athletics / Olympic Weightlifting) inside a labelled `InputDecorator` before Difficulty
+- [x] **Batch inserts in `savePlan()`** — all `plan_exercises` and `plan_exercise_sets` rows collected into lists and inserted in 2 batch round-trips (was 1 per exercise + 1 per set); uses client-side `pe.id` UUID so sets can reference exercises without waiting for DB-returned IDs
+- [x] **PlansListScreen filter redesign** — search bar + tune icon button always visible; filters (dropdowns + chips) moved to `showModalBottomSheet` with `StatefulBuilder`; "Clear all" button in sheet; active filter dot indicator on tune button; `FloatingActionButton.extended` for "New Plan"
+- [x] **Plan card subtitle split** — `_subtitle()` replaced with `_planInfo()` (weeks · sessions · difficulty) + `_ownerLine()` (owner name only, no "by" prefix); rendered as two `Text` lines in a `Column` — info in white54, owner in white38
+- [x] **Plan card trailing icon alignment** — `PopupMenuButton(padding: EdgeInsets.zero)` for owner actions; chevron wrapped in `SizedBox(40×40)` — both paths same width in trailing `Row`
+- [x] **GymTeam user hidden from Users list** — `allUsersProvider` adds `.eq('is_official', false)` to exclude the GymTeam App account
+- [x] **Password visibility toggle** — login + register screens: `_obscurePassword` state + `suffixIcon: IconButton(Icons.visibility / Icons.visibility_off)` on the password `TextField`
+- [x] **`delete_account` RPC fix** — updated to explicitly delete from `activity_feed`, `feed_comments`, `follows`, `exercise_records`, `user_plan_progress`, `user_plan_1rm`, `plan_favorites`, `workout_plans` before deleting `auth.users`; prevents FK violation on `activity_feed.target_id`
+
+---
+
 ## Known Issues / Decisions
 - Project moved to `C:\Users\joao.dias\Desktop\flutter_projects\gym-team-app\gym_team` to avoid non-ASCII path (`João`) causing Gradle errors on Windows
 - `android/gradle.properties` has `android.overridePathCheck=true` — keep it in place
