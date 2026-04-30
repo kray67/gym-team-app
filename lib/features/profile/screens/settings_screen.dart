@@ -72,8 +72,6 @@ class SettingsScreen extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final currentColor =
         ref.watch(themeColorNotifierProvider).valueOrNull ?? 'purple';
-    final themeMode =
-        ref.watch(themeModeNotifierProvider).valueOrNull ?? ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -85,25 +83,6 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: SegmentedButton<ThemeMode>(
-                    segments: const [
-                      ButtonSegment(
-                          value: ThemeMode.dark,
-                          icon: Icon(Icons.dark_mode),
-                          label: Text('Dark')),
-                      ButtonSegment(
-                          value: ThemeMode.light,
-                          icon: Icon(Icons.light_mode),
-                          label: Text('Light')),
-                    ],
-                    selected: {themeMode},
-                    onSelectionChanged: (s) => ref
-                        .read(themeModeNotifierProvider.notifier)
-                        .setMode(s.first),
-                  ),
-                ),
                 Text(
                   'App color',
                   style: Theme.of(context).textTheme.bodyMedium,

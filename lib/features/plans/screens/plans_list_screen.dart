@@ -463,92 +463,132 @@ class _PlanCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Active: the active plan is the copy; source plan's id will be copy's sourcePlanId
     final activePlan = ref.watch(activePlanProvider).valueOrNull;
     final isActive = activePlan?.sourcePlanId == plan.id;
+    final cs = Theme.of(context).colorScheme;
+    final stripColor = isActive ? Colors.green.shade500 : cs.primary;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: ListTile(
-        title: Row(
-          children: [
-            Flexible(
-              child: Text(plan.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            if (isActive) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade900,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.shade600),
-                ),
-                child: const Text(
-                  'Active',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => context.push('/plans/${plan.id}'),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    plan.title,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 15),
+                                  ),
+                                ),
+                                if (isActive) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade900,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: Colors.green.shade600),
+                                    ),
+                                    child: Text(
+                                      'Active',
+                                      style: TextStyle(
+                                        color: Colors.green.shade300,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            if (_planInfo().isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(_planInfo(),
+                                  style: TextStyle(
+                                      color: cs.onSurfaceVariant,
+                                      fontSize: 13)),
+                            ],
+                            if (_ownerLine().isNotEmpty) ...[
+                              const SizedBox(height: 1),
+                              Text(_ownerLine(),
+                                  style: TextStyle(
+                                      color: cs.onSurfaceVariant
+                                          .withValues(alpha: 0.6),
+                                      fontSize: 12)),
+                            ],
+                          ],
+                        ),
+                      ),
+                      // Favorite toggle
+                      if (plan.sourcePlanId == null)
+                        IconButton(
+                          icon: Icon(
+                            _isFavorited
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: _isFavorited
+                                ? Colors.red.shade300
+                                : cs.onSurfaceVariant,
+                            size: 20,
+                          ),
+                          tooltip: _isFavorited
+                              ? 'Remove from favorites'
+                              : 'Add to favorites',
+                          onPressed: () => _toggleFavorite(ref),
+                        ),
+                      // Owner actions
+                      if (_isOwner)
+                        PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(Icons.more_vert,
+                              color: cs.onSurfaceVariant, size: 20),
+                          onSelected: (v) {
+                            if (v == 'delete') _deletePlan(context, ref);
+                          },
+                          itemBuilder: (_) => [
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete plan',
+                                  style:
+                                      TextStyle(color: Colors.red.shade400)),
+                            ),
+                          ],
+                        )
+                      else
+                        Icon(Icons.chevron_right,
+                            color: cs.onSurfaceVariant, size: 20),
+                      const SizedBox(width: 4),
+                    ],
                   ),
                 ),
+              ),
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(width: 4, color: stripColor),
               ),
             ],
-          ],
+          ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_planInfo().isNotEmpty)
-              Text(_planInfo(),
-                  style: const TextStyle(color: Colors.white54, fontSize: 13)),
-            if (_ownerLine().isNotEmpty)
-              Text(_ownerLine(),
-                  style: const TextStyle(color: Colors.white38, fontSize: 12)),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Favorite toggle — only on source plans, not copies
-            if (plan.sourcePlanId == null)
-              IconButton(
-                icon: Icon(
-                  _isFavorited ? Icons.favorite : Icons.favorite_border,
-                  color: _isFavorited ? Colors.red.shade300 : Colors.white38,
-                  size: 20,
-                ),
-                tooltip:
-                    _isFavorited ? 'Remove from favorites' : 'Add to favorites',
-                onPressed: () => _toggleFavorite(ref),
-              ),
-            // Owner actions — same 40×40 footprint as chevron SizedBox
-            if (_isOwner)
-              PopupMenuButton<String>(
-                padding: EdgeInsets.zero,
-                icon: const Icon(Icons.more_vert, color: Colors.white54),
-                onSelected: (v) {
-                  if (v == 'delete') _deletePlan(context, ref);
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete plan',
-                        style: TextStyle(color: Colors.red.shade400)),
-                  ),
-                ],
-              )
-            else
-              const SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(Icons.chevron_right),
-              ),
-          ],
-        ),
-        onTap: () => context.push('/plans/${plan.id}'),
       ),
     );
   }

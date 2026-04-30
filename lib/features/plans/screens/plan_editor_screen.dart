@@ -10,6 +10,7 @@ const _focusOptions = [
   'Cardio',
   'Athletics',
   'Olympic Weightlifting',
+  'Female Focused',
 ];
 
 const _difficultyOptions = ['novice', 'intermediate', 'advanced'];
