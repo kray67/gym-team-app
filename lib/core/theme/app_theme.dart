@@ -80,6 +80,9 @@ class AppTheme {
       listTileTheme: const ListTileThemeData(
         selectedTileColor: Colors.transparent,
       ),
+      chipTheme: const ChipThemeData(
+        showCheckmark: false,
+      ),
     );
   }
 }
