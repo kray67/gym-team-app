@@ -50,7 +50,7 @@ lib/
 
 ## Database Schema (Supabase / Postgres)
 ```
-profiles             -- extends auth.users: username, display_name, bio, avatar_url, avatar_id (int), avatar_color (text), active_plan_id (uuid → workout_plans), is_official (bool default false — GymTeam App account), theme_color (text)
+profiles             -- extends auth.users: username, display_name, bio, avatar_url, avatar_id (int), avatar_color (text), active_plan_id (uuid → workout_plans), is_official (bool default false — GymTeam App account), theme_color (text), theme_mode (text default 'dark' — 'dark' | 'light')
 follows              -- (follower_id, following_id) composite PK
 exercises            -- catalog: name, category, muscle_group, is_custom, created_by, tracking_type (text, default 'weight_reps')
 workout_plans        -- title, description, is_public, owner_id, source_plan_id (uuid self-ref ON DELETE SET NULL — non-null = personal copy), is_deleted (bool — soft-delete for copies; history still joins the row), focus (text[] NOT NULL DEFAULT '{}' — multi-select plan focus: Strength/Bodybuilding/Fitness/Cardio/Athletics/Olympic Weightlifting)
@@ -268,6 +268,7 @@ Both `ActiveWorkoutScreen` and `SessionEditorScreen` use a slot-based list model
 - `_ExerciseCard` watches `activeWorkoutNotifierProvider` for `state.planId` to compute `showTarget`; passes it to `_TableHeader` and `_SetRow`
 
 ## Color Scheme & Icon Variants
+- **Theme mode**: `ThemeModeNotifier` (`lib/core/theme/theme_color_notifier.dart`) — `keepAlive` AsyncNotifier alongside `ThemeColorNotifier`; reads/writes `profiles.theme_mode` (`'dark'` | `'light'`); invalidates on auth change via `ref.listen`; `setMode(ThemeMode)` updates state immediately then persists; `app.dart` passes `theme: lightWithSeed`, `darkTheme: darkWithSeed`, `themeMode:` to `MaterialApp.router`; SQL: `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_mode text DEFAULT 'dark'`
 - **Theme color persistence**: requires `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_color text;` in Supabase; `ThemeColorNotifier.build()` queries this column on launch; `setColor()` updates state immediately then persists to DB — without the column the DB write fails silently and restarts default to purple
 - **Active chip on plan cards**: `_PlanCard` in `plans_list_screen.dart` watches `activePlanProvider`; checks `activePlan?.sourcePlanId == plan.id` (list shows source plans; the active plan IS the copy) — green "Active" pill badge in title `Row`
 - **SVG icon variants**: `assets/icon/icon_blue.svg` / `icon_yellow.svg` / `icon_orange.svg` — source SVGs matching each accent color scheme; splash is build-time only — to change: export SVG to 1024×1024 PNG → replace `assets/icon/icon.png` → update `flutter_native_splash.yaml` `color` → `dart run flutter_native_splash:create` → rebuild APK

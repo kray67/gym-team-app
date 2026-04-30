@@ -540,6 +540,28 @@ $$;
 
 ---
 
+## Phase 12 — Visual Redesign (Sporty Bold + Dark/Light Mode) ✅
+
+**Goal:** Modernise the app's visual design without touching functionality.
+
+### SQL applied ✅
+```sql
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_mode text DEFAULT 'dark';
+```
+
+### Done
+- [x] **`AppTheme.darkWithSeed()` tokens** — `cardTheme` (16px radius), `inputDecorationTheme` (filled, no border outline), `tabBarTheme` (pill-shaped selected tab indicator via `BoxDecoration(borderRadius:circular(20))`), `chipTheme` (StadiumBorder shape, no checkmark)
+- [x] **`AppTheme.lightWithSeed()`** — new method; uses `ColorScheme.fromSeed(brightness: Brightness.light)` without surface pinning (Material You tinted surfaces show naturally)
+- [x] **`ThemeModeNotifier`** — new `@Riverpod(keepAlive: true)` async notifier in `theme_color_notifier.dart`; reads/writes `profiles.theme_mode`; invalidates on auth change; `setMode(ThemeMode)` updates state immediately then persists
+- [x] **`app.dart`** — passes `theme: lightWithSeed`, `darkTheme: darkWithSeed`, `themeMode: ThemeModeNotifier` to `MaterialApp.router`
+- [x] **Settings screen** — `SegmentedButton<ThemeMode>` (Dark / Light) at top of Appearance section; immediately switches theme and persists to DB
+- [x] **Exercise card left strip (active workout)** — `_ExerciseCard` wrapped in `ClipRRect + Stack + Positioned`; 4px strip at left edge; superset color when in superset, `colorScheme.primary` for standalone
+- [x] **Exercise card left strip (plan session builder)** — same pattern on `_ExercisePlanCard`
+- [x] **Feed stat chips** — `_StatChip` widget (pill container, icon + label); `workout_completed` feed items now show `Wrap` of 3 chips (duration · weight · sets) instead of a plain text string; theme-adaptive colors
+- [x] Web build rebuilt + pushed to Vercel
+
+---
+
 ## Known Issues / Decisions
 - Project moved to `C:\Users\joao.dias\Desktop\flutter_projects\gym-team-app\gym_team` to avoid non-ASCII path (`João`) causing Gradle errors on Windows
 - `android/gradle.properties` has `android.overridePathCheck=true` — keep it in place
