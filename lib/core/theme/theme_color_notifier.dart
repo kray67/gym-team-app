@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:gym_team/core/supabase/supabase_client.dart';
 import 'package:gym_team/features/auth/providers/auth_provider.dart';
@@ -30,5 +31,34 @@ class ThemeColorNotifier extends _$ThemeColorNotifier {
         .from('profiles')
         .update({'theme_color': color})
         .eq('id', userId);
+  }
+}
+
+/// Persists and provides the user's chosen theme mode (dark / light).
+/// Re-fetches on login/logout via auth listener.
+@Riverpod(keepAlive: true)
+class ThemeModeNotifier extends _$ThemeModeNotifier {
+  @override
+  Future<ThemeMode> build() async {
+    ref.listen(authNotifierProvider, (_, __) => ref.invalidateSelf());
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return ThemeMode.dark;
+    final data = await supabase
+        .from('profiles')
+        .select('theme_mode')
+        .eq('id', userId)
+        .single();
+    return (data['theme_mode'] as String?) == 'light'
+        ? ThemeMode.light
+        : ThemeMode.dark;
+  }
+
+  Future<void> setMode(ThemeMode mode) async {
+    state = AsyncData(mode);
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    await supabase.from('profiles').update({
+      'theme_mode': mode == ThemeMode.light ? 'light' : 'dark',
+    }).eq('id', userId);
   }
 }

@@ -12,9 +12,15 @@ class App extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     final colorName =
         ref.watch(themeColorNotifierProvider).valueOrNull ?? 'purple';
+    final seed = AppTheme.seedForName(colorName);
+    final themeMode =
+        ref.watch(themeModeNotifierProvider).valueOrNull ?? ThemeMode.dark;
+
     return MaterialApp.router(
       title: 'Gym Team',
-      theme: AppTheme.darkWithSeed(AppTheme.seedForName(colorName)),
+      theme: AppTheme.lightWithSeed(seed),
+      darkTheme: AppTheme.darkWithSeed(seed),
+      themeMode: themeMode,
       routerConfig: router,
     );
   }

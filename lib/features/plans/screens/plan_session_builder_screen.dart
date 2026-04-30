@@ -916,12 +916,20 @@ class _ExercisePlanCard extends ConsumerWidget {
     final notifier = ref.read(planEditorNotifierProvider.notifier);
     final colorScheme = Theme.of(context).colorScheme;
 
+    final stripColor = labelColor ?? colorScheme.primary;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-          child: Column(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                  child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Exercise header ─────────────────────────────────────────
@@ -1154,6 +1162,16 @@ class _ExercisePlanCard extends ConsumerWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(width: 4, color: stripColor),
               ),
             ],
           ),

@@ -767,12 +767,20 @@ class _ExerciseCard extends ConsumerWidget {
         ? <String>{}
         : _computePrSetIds(entry.sets, existingForExercise);
 
+    final stripColor = labelColor ?? Theme.of(context).colorScheme.primary;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-          child: Column(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                  child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Exercise header ───────────────────────────────────────────
@@ -924,6 +932,16 @@ class _ExerciseCard extends ConsumerWidget {
                     ),
                   ),
                 ],
+              ),
+            ],
+          ),
+        ),
+      ),
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(width: 4, color: stripColor),
               ),
             ],
           ),

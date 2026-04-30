@@ -84,6 +84,29 @@ class _FeedTab extends ConsumerWidget {
   }
 }
 
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _StatChip(this.icon, this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, size: 11, color: cs.primary),
+        const SizedBox(width: 4),
+        Text(label, style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
+      ]),
+    );
+  }
+}
+
 class _FeedItemTile extends StatelessWidget {
   final FeedItem item;
   const _FeedItemTile({required this.item});
@@ -186,10 +209,15 @@ class _FeedItemTile extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const TextSpan(text: ' completed a workout'),
           ])),
-          const SizedBox(height: 2),
-          Text(
-            '$durationStr · $weightStr · $totalSets sets',
-            style: const TextStyle(fontSize: 12, color: Colors.white54),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              _StatChip(Icons.timer_outlined, durationStr),
+              _StatChip(Icons.fitness_center, weightStr),
+              _StatChip(Icons.check_circle_outline, '$totalSets sets'),
+            ],
           ),
         ],
       );
