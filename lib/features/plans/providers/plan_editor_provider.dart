@@ -490,50 +490,53 @@ class PlanEditorNotifier extends _$PlanEditorNotifier {
       await supabase.from('plan_exercises').delete().eq('plan_id', planId);
     }
 
-    // Group exercises by session and assign position within each session
-    final bySession = <(int, int), List<PlanEditorExercise>>{};
-    for (final pe in s.exercises) {
-      bySession.putIfAbsent((pe.weekNumber, pe.sessionNumber), () => []).add(pe);
-    }
+    if (s.exercises.isNotEmpty) {
+      // Assign position within each session, then batch-insert everything in
+      // two round-trips instead of one per exercise + one per set.
+      final bySession = <(int, int), List<PlanEditorExercise>>{};
+      for (final pe in s.exercises) {
+        bySession.putIfAbsent((pe.weekNumber, pe.sessionNumber), () => []).add(pe);
+      }
 
-    for (final entry in bySession.entries) {
-      final exercises = entry.value;
-      for (var i = 0; i < exercises.length; i++) {
-        final pe = exercises[i];
-        final peRow = await supabase
-            .from('plan_exercises')
-            .insert({
-              'plan_id': planId,
-              'exercise_id': pe.exercise.id,
-              'position': i,
-              'goal_type': pe.goalType,
-              'weight_type': pe.weightType,
-              'week_number': pe.weekNumber,
-              'session_number': pe.sessionNumber,
-              if (pe.supersetGroupId != null)
-                'superset_group_id': pe.supersetGroupId,
-              if (pe.note != null && pe.note!.isNotEmpty) 'note': pe.note,
-            })
-            .select('id')
-            .single();
-        final peId = peRow['id'] as String;
+      final exerciseRows = <Map<String, dynamic>>[];
+      final setRows = <Map<String, dynamic>>[];
 
-        for (final set in pe.sets) {
-          await supabase.from('plan_exercise_sets').insert({
-            'plan_exercise_id': peId,
-            'set_number': set.setNumber,
-            'target_reps': set.targetReps,
-            'target_reps_max': set.targetRepsMax,
-            'target_weight': set.targetWeight,
-            'target_rpe': set.targetRpe,
-            'target_rpe_max': set.targetRpeMax,
-            'is_warmup': set.isWarmup,
-            if (set.weightIncrement != null)
-              'weight_increment': set.weightIncrement,
-            if (set.targetDurationSecs != null)
-              'target_duration_secs': set.targetDurationSecs,
+      for (final entry in bySession.entries) {
+        final exercises = entry.value;
+        for (var i = 0; i < exercises.length; i++) {
+          final pe = exercises[i];
+          exerciseRows.add({
+            'id': pe.id,
+            'plan_id': planId,
+            'exercise_id': pe.exercise.id,
+            'position': i,
+            'goal_type': pe.goalType,
+            'weight_type': pe.weightType,
+            'week_number': pe.weekNumber,
+            'session_number': pe.sessionNumber,
+            if (pe.supersetGroupId != null) 'superset_group_id': pe.supersetGroupId,
+            if (pe.note != null && pe.note!.isNotEmpty) 'note': pe.note,
           });
+          for (final set in pe.sets) {
+            setRows.add({
+              'plan_exercise_id': pe.id,
+              'set_number': set.setNumber,
+              'target_reps': set.targetReps,
+              'target_reps_max': set.targetRepsMax,
+              'target_weight': set.targetWeight,
+              'target_rpe': set.targetRpe,
+              'target_rpe_max': set.targetRpeMax,
+              'is_warmup': set.isWarmup,
+              if (set.weightIncrement != null) 'weight_increment': set.weightIncrement,
+              if (set.targetDurationSecs != null) 'target_duration_secs': set.targetDurationSecs,
+            });
+          }
         }
+      }
+
+      await supabase.from('plan_exercises').insert(exerciseRows);
+      if (setRows.isNotEmpty) {
+        await supabase.from('plan_exercise_sets').insert(setRows);
       }
     }
 

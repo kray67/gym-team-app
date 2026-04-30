@@ -439,7 +439,7 @@ class _PlanCard extends ConsumerWidget {
     ref.invalidate(allPlansProvider);
   }
 
-  String _subtitle() {
+  String _planInfo() {
     final parts = <String>[];
     if (plan.weeks != null) {
       parts.add('${plan.weeks} ${plan.weeks == 1 ? 'week' : 'weeks'}');
@@ -450,18 +450,15 @@ class _PlanCard extends ConsumerWidget {
     if (plan.difficulty != null) {
       parts.add(_difficultyLabels[plan.difficulty] ?? plan.difficulty!);
     }
+    return parts.join(' · ');
+  }
 
+  String _ownerLine() {
     final owner = plan.owner;
-    if (owner?.isOfficial == true) {
-      parts.add('by GymTeam App');
-    } else if (_isOwner) {
-      parts.add('by You · ${plan.isPublic ? 'Public' : 'Private'}');
-    } else if (owner != null) {
-      final name = owner.displayName ?? owner.username;
-      parts.add('by $name');
-    }
-
-    return parts.where((p) => p.isNotEmpty).join(' · ');
+    if (owner?.isOfficial == true) return 'GymTeam App';
+    if (_isOwner) return 'You · ${plan.isPublic ? 'Public' : 'Private'}';
+    if (owner != null) return owner.displayName ?? owner.username;
+    return '';
   }
 
   @override
@@ -501,9 +498,16 @@ class _PlanCard extends ConsumerWidget {
             ],
           ],
         ),
-        subtitle: Text(
-          _subtitle(),
-          style: const TextStyle(color: Colors.white54, fontSize: 13),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_planInfo().isNotEmpty)
+              Text(_planInfo(),
+                  style: const TextStyle(color: Colors.white54, fontSize: 13)),
+            if (_ownerLine().isNotEmpty)
+              Text(_ownerLine(),
+                  style: const TextStyle(color: Colors.white38, fontSize: 12)),
+          ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -520,9 +524,10 @@ class _PlanCard extends ConsumerWidget {
                     _isFavorited ? 'Remove from favorites' : 'Add to favorites',
                 onPressed: () => _toggleFavorite(ref),
               ),
-            // Owner actions
+            // Owner actions — same 40×40 footprint as chevron SizedBox
             if (_isOwner)
               PopupMenuButton<String>(
+                padding: EdgeInsets.zero,
                 icon: const Icon(Icons.more_vert, color: Colors.white54),
                 onSelected: (v) {
                   if (v == 'delete') _deletePlan(context, ref);
@@ -536,7 +541,11 @@ class _PlanCard extends ConsumerWidget {
                 ],
               )
             else
-              const Icon(Icons.chevron_right),
+              const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(Icons.chevron_right),
+              ),
           ],
         ),
         onTap: () => context.push('/plans/${plan.id}'),
