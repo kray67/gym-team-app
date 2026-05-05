@@ -540,24 +540,28 @@ $$;
 
 ---
 
-## Phase 12 — Visual Redesign (Sporty Bold + Dark/Light Mode) ✅
+## Phase 12 — Visual Redesign (Sporty Bold) ✅
 
 **Goal:** Modernise the app's visual design without touching functionality.
 
 ### SQL applied ✅
 ```sql
+-- theme_mode column (infrastructure kept even though light mode UI was removed)
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_mode text DEFAULT 'dark';
 ```
 
 ### Done
-- [x] **`AppTheme.darkWithSeed()` tokens** — `cardTheme` (16px radius), `inputDecorationTheme` (filled, no border outline), `tabBarTheme` (pill-shaped selected tab indicator via `BoxDecoration(borderRadius:circular(20))`), `chipTheme` (StadiumBorder shape, no checkmark)
-- [x] **`AppTheme.lightWithSeed()`** — new method; uses `ColorScheme.fromSeed(brightness: Brightness.light)` without surface pinning (Material You tinted surfaces show naturally)
-- [x] **`ThemeModeNotifier`** — new `@Riverpod(keepAlive: true)` async notifier in `theme_color_notifier.dart`; reads/writes `profiles.theme_mode`; invalidates on auth change; `setMode(ThemeMode)` updates state immediately then persists
-- [x] **`app.dart`** — passes `theme: lightWithSeed`, `darkTheme: darkWithSeed`, `themeMode: ThemeModeNotifier` to `MaterialApp.router`
-- [x] **Settings screen** — `SegmentedButton<ThemeMode>` (Dark / Light) at top of Appearance section; immediately switches theme and persists to DB
-- [x] **Exercise card left strip (active workout)** — `_ExerciseCard` wrapped in `ClipRRect + Stack + Positioned`; 4px strip at left edge; superset color when in superset, `colorScheme.primary` for standalone
+- [x] **`AppTheme.darkWithSeed()` tokens** — `cardTheme` (16px radius, `surfaceContainerHigh` color), `inputDecorationTheme` (filled, no border outline), `tabBarTheme` (pill-shaped selected tab indicator), `chipTheme` (StadiumBorder, no checkmark)
+- [x] **Bold typography** — `textTheme` overrides: `headlineLarge` w800/32px, `headlineMedium` w800/26px, `titleLarge` w700/20px; heavier weight throughout all screens without per-screen changes
+- [x] **Accent-colored AppBar titles** — `AppBarTheme.titleTextStyle` uses `colorScheme.primary` at 22px w800; most visible single change — every screen title is now in the accent color
+- [x] **NavigationBar styling** — `NavigationBarThemeData`: accent-filled pill indicator, bold selected labels (w700), `surfaceContainerLow` background
+- [x] **Plan list card strips** — `_PlanCard` restructured from `ListTile` to `ClipRRect + Stack + InkWell`; 4px left strip (accent color, or green when plan is active); subtitle colors now use `colorScheme.onSurfaceVariant` instead of hardcoded white
+- [x] **Exercise card left strip (active workout)** — `_ExerciseCard` wrapped in `ClipRRect + Stack + Positioned`; 4px strip; superset color or `colorScheme.primary`
 - [x] **Exercise card left strip (plan session builder)** — same pattern on `_ExercisePlanCard`
-- [x] **Feed stat chips** — `_StatChip` widget (pill container, icon + label); `workout_completed` feed items now show `Wrap` of 3 chips (duration · weight · sets) instead of a plain text string; theme-adaptive colors
+- [x] **Feed stat chips** — `_StatChip` pill widget; `workout_completed` items show Wrap of 3 chips (duration · weight · sets) instead of plain text
+- [x] **`ThemeModeNotifier`** — infrastructure in `theme_color_notifier.dart` (reads/writes `profiles.theme_mode`); light mode UI removed after readability issues with hardcoded `Colors.white*` throughout the app
+- [x] **Light mode removed** — `app.dart` always uses `darkWithSeed`; dark/light toggle removed from Settings; `lightWithSeed()` kept as stub
+- [x] **Plan Focus: "Female Focused"** chip added to plan editor
 - [x] Web build rebuilt + pushed to Vercel
 
 ---
