@@ -28,7 +28,8 @@ const _difficultyLabels = {
 
 // ── Top-level helpers ─────────────────────────────────────────────────────────
 
-/// Sets [plan] as the active plan, showing the 1RM dialog if needed.
+/// Sets [plan] as the active plan, then prompts for 1RM values if needed.
+/// Activation happens immediately; the 1RM dialog is shown afterwards.
 /// Reused by both [_ActivePlanButton] and the inline activation prompt in [_SessionCard].
 Future<void> activatePlan(
     BuildContext context, WidgetRef ref, WorkoutPlan plan) async {
@@ -59,27 +60,13 @@ Future<void> activatePlan(
     if (confirmed != true) return;
   }
 
-  final hasPercent1rm =
-      plan.exercises.any((e) => e.weightType == 'percent_1rm');
-  Map<String, double> oneRMs = {};
-  if (hasPercent1rm) {
-    final stored = await ref.read(userPlan1rmProvider(plan.id).future);
-    if (!context.mounted) return;
-    final result =
-        await showFullPlan1RMDialog(context, plan, prefilled: stored);
-    if (result == null) return;
-    oneRMs = result;
-  }
   if (!context.mounted) return;
+
+  // Activate immediately — 1RM values are optional at this stage.
   try {
     await ref
         .read(planActiveNotifierProvider.notifier)
-        .setActivePlan(plan.id, oneRMs);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"${plan.title}" set as active plan')),
-      );
-    }
+        .setActivePlan(plan.id, {});
   } catch (e) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -89,6 +76,32 @@ Future<void> activatePlan(
         ),
       );
     }
+    return;
+  }
+
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('"${plan.title}" set as active plan')),
+  );
+
+  // If the plan uses %1RM, ask for values now that it's active.
+  final hasPercent1rm =
+      plan.exercises.any((e) => e.weightType == 'percent_1rm');
+  if (!hasPercent1rm || !context.mounted) return;
+
+  final activePlan = await ref.read(activePlanProvider.future);
+  if (activePlan == null || !context.mounted) return;
+
+  final stored = await ref.read(userPlan1rmProvider(activePlan.id).future);
+  if (!context.mounted) return;
+
+  final result =
+      await showFullPlan1RMDialog(context, plan, prefilled: stored);
+  if (result == null || result.isEmpty || !context.mounted) return;
+
+  final notifier = ref.read(planActiveNotifierProvider.notifier);
+  for (final entry in result.entries) {
+    await notifier.update1rm(activePlan.id, entry.key, entry.value);
   }
 }
 
@@ -306,6 +319,7 @@ class PlanDetailScreen extends ConsumerStatefulWidget {
 class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _redirectedToCopy = false;
 
   @override
   void initState() {
@@ -337,6 +351,15 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
     // When viewing a source while a copy is active, progress lives on the copy.
     final progressPlanId =
         (isActivePlan && !isCopy) ? activePlan!.id : widget.planId;
+
+    // Auto-redirect to the active copy when opening the source plan.
+    final activeCopyId = (isActivePlan && !isCopy) ? activePlan?.id : null;
+    if (activeCopyId != null && !_redirectedToCopy) {
+      _redirectedToCopy = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) context.pushReplacement('/plans/$activeCopyId');
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -417,6 +440,135 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                         }
                       },
                     ),
+                  if (isCopy && isActivePlan)
+                    PopupMenuButton<String>(
+                      onSelected: (value) async {
+                        if (value == 'update_1rm') {
+                          final stored = await ref
+                              .read(userPlan1rmProvider(widget.planId).future);
+                          if (!context.mounted) return;
+                          final result = await showFullPlan1RMDialog(
+                              context, plan,
+                              prefilled: stored);
+                          if (result == null || !context.mounted) return;
+                          final notifier =
+                              ref.read(planActiveNotifierProvider.notifier);
+                          for (final entry in result.entries) {
+                            await notifier.update1rm(
+                                widget.planId, entry.key, entry.value);
+                          }
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('1RM values updated')),
+                            );
+                          }
+                        } else if (value == 'restart') {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Restart Plan?'),
+                              content: const Text(
+                                'This will reset your session progress. '
+                                'Your workout history is preserved.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text('Restart'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true || !context.mounted) return;
+                          try {
+                            await ref
+                                .read(planActiveNotifierProvider.notifier)
+                                .restartPlan(widget.planId, {});
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Plan progress reset')),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error: $e'),
+                                  backgroundColor: Colors.red.shade800,
+                                ),
+                              );
+                            }
+                          }
+                        } else if (value == 'archive') {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Archive Plan?'),
+                              content: const Text(
+                                'Your workout history will be preserved. '
+                                'You can reactivate the plan at any time.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  style: FilledButton.styleFrom(
+                                      backgroundColor: Colors.red.shade800),
+                                  child: const Text('Archive'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true || !context.mounted) return;
+                          try {
+                            await ref
+                                .read(planActiveNotifierProvider.notifier)
+                                .clearActivePlan(widget.planId);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Plan archived')),
+                              );
+                              context.pop();
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error: $e'),
+                                  backgroundColor: Colors.red.shade800,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'update_1rm',
+                          child: Text('Update 1RM'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'restart',
+                          child: Text('Restart Plan'),
+                        ),
+                        PopupMenuItem(
+                          value: 'archive',
+                          child: Text(
+                            'Archive Plan',
+                            style: TextStyle(color: Colors.red.shade300),
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               );
             },
@@ -432,8 +584,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
           isCopy: isCopy,
           isActivePlan: isActivePlan,
           progressPlanId: progressPlanId,
-          activeCopyId:
-              (isActivePlan && !isCopy) ? activePlan?.id : null,
+          activeCopyId: activeCopyId,
           tabController: _tabController,
         ),
       ),
@@ -1162,15 +1313,13 @@ class _ActivePlanButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (isActivePlan) {
       return OutlinedButton.icon(
-        onPressed: activeCopyId != null
-            ? () => context.push('/plans/$activeCopyId')
-            : null,
+        onPressed: null,
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.green,
           side: const BorderSide(color: Colors.green),
         ),
         icon: const Icon(Icons.check_circle_outline, size: 18),
-        label: const Text('Active · View Copy →'),
+        label: const Text('Active Plan ✓'),
       );
     }
 
